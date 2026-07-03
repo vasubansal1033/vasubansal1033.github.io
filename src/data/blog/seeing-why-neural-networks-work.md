@@ -100,3 +100,37 @@ Tweak **noise** or the **learning rate** if you want; either one reshuffles the 
 <script src="/visualizations/linear-collapse.js"></script>
 
 The takeaway is blunt: depth alone doesn't buy expressiveness. Nonlinearity between layers is what turns a stack of matrices into something that can bend. Without it, you're always drawing a line — no matter how tall the stack gets.
+## S1-3 · Embeddings learn similarity from nothing but next-token
+
+### The claim
+
+Word embeddings don't start with a dictionary of synonyms or a taxonomy of nouns. They're just vectors that get nudged around while a model learns to guess the next token. And yet — if the training data is set up right — tokens that never appeared in the same sentence can end up sitting right next to each other in vector space, purely because they showed up in the same kinds of contexts.
+
+That's the bit I wanted to see for myself. Not read about it in a paper, but watch three animals drift together while three fruits drift somewhere else, with nothing in the loss function that ever says "these are the same category."
+
+### The setup
+
+I built a tiny made-up language with three buckets of words:
+
+- **animals**: cat, dog, cow
+- **fruits**: apple, mango
+- **verbs**: eat, chase, see
+
+The grammar is deliberately boring. Every animal is followed by any of the three verbs with equal probability — "the cat eats", "the dog chases", "the cow sees", and so on. Every fruit is followed by one of two color words (red, yellow) that only ever appear after fruits. Verbs always lead back to "the."
+
+Same category, same distribution of what comes next. That's the whole trick.
+
+The model itself is about as small as it gets: each token gets a **2-dimensional embedding** (so we can plot it directly, no PCA needed), and a softmax layer predicts the next token from that vector alone. Training is plain cross-entropy with full-batch gradient descent — no fancy architecture, no attention, no pre-training on the internet.
+
+### Watch it happen
+
+Hit **Train** and watch the scatter plot. At step zero the points are scattered at random. Within a few hundred steps you should see the animals pull together, the fruits pull together, and the verbs form their own little island — even though the model was never told which words belong together.
+
+Pick a token in the **Nearest neighbors** panel on the right. After training settles, cat's three closest vectors should be dog and cow, not words that merely rhyme or share letters. Same story for apple and mango. The checkmarks mean "same category" — and they should dominate once the loss has had time to drop.
+
+The loss chart underneath the plot is there mostly as a sanity check: if it's still falling, the geometry is still moving. Pause, reset, and train again if you want to watch the clustering emerge from a different random start.
+
+<div class="viz-embedding-clustering" data-viz="embedding-clustering"></div>
+<script src="/visualizations/embedding-clustering.js"></script>
+
+This is the distributional hypothesis made literal. Tokens that play the same role in the toy grammar get pulled into the same region of space because the model keeps asking them to predict the same kinds of continuations. Nobody hand-labelled "animal" — the category **emerged** from next-token prediction alone. Scale that idea up to billions of tokens and billions of parameters, and you get the semantic geometry that powers modern language models.
