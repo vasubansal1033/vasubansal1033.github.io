@@ -10,7 +10,7 @@
 
   function loadD3() {
     if (!d3Promise) {
-      d3Promise = import(/* @vite-ignore */ D3_URL).catch(() => null);
+      d3Promise = import(/* @vite-ignore */ D3_URL);
     }
     return d3Promise;
   }
@@ -215,7 +215,6 @@
       pointStroke: isDark ? "rgba(2,6,23,0.75)" : "rgba(255,255,255,0.9)",
       text: styles.getPropertyValue("--foreground").trim() || "#334155",
       axis: isDark ? "rgba(148,163,184,0.7)" : "rgba(100,116,139,0.7)",
-      panelBg: isDark ? "#0b1220" : "#f8fafc",
     };
   }
 
@@ -374,80 +373,17 @@
     draw(lossRelu, C1);
   }
 
-  /* ---------- fallback (no d3) ---------- */
-
-  function drawPlotFallback(canvas, dpr, predict, pts, colors) {
-    const size = 300;
-    const ctx = canvas.getContext("2d");
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, size, size);
-    ctx.save();
-    clipRoundedRect(ctx, size, 10, 1.5);
-    ctx.fillStyle = colors.panelBg;
-    ctx.fillRect(0, 0, size, size);
-
-    const N = 56;
-    const cell = size / N;
-    const c0 = [249, 115, 22];
-    const c1 = [59, 130, 246];
-    for (let i = 0; i < N; i++) {
-      const x = -BOUNDS + ((i + 0.5) / N) * 2 * BOUNDS;
-      for (let j = 0; j < N; j++) {
-        const yy = BOUNDS - ((j + 0.5) / N) * 2 * BOUNDS;
-        const p = predict(x, yy);
-        const conf = Math.abs(p - 0.5) * 2;
-        const col = p >= 0.5 ? c1 : c0;
-        ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${0.1 + 0.4 * conf})`;
-        ctx.fillRect(i * cell, j * cell, cell + 1, cell + 1);
-      }
-    }
-    const toX = x => ((x + BOUNDS) / (2 * BOUNDS)) * size;
-    const toY = y => ((BOUNDS - y) / (2 * BOUNDS)) * size;
-    for (const p of pts) {
-      ctx.beginPath();
-      ctx.arc(toX(p.x), toY(p.y), 3, 0, Math.PI * 2);
-      ctx.fillStyle = p.label === 0 ? C0 : C1;
-      ctx.fill();
-      ctx.strokeStyle = colors.pointStroke;
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    }
-    ctx.restore();
-  }
-
-  function drawLossFallback(canvas, lossLin, lossRelu, colors) {
-    const ctx = canvas.getContext("2d");
-    const w = canvas.width;
-    const h = canvas.height;
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = colors.panelBg;
-    ctx.fillRect(0, 0, w, h);
-    const pad = 8;
-    let maxL = 0.02;
-    for (const v of lossLin) if (v > maxL) maxL = v;
-    for (const v of lossRelu) if (v > maxL) maxL = v;
-    const n = Math.max(lossLin.length, lossRelu.length, 2);
-    const plot = (arr, stroke) => {
-      if (arr.length < 2) return;
-      ctx.beginPath();
-      ctx.strokeStyle = stroke;
-      ctx.lineWidth = 1.5;
-      for (let k = 0; k < arr.length; k++) {
-        const x = pad + (k / (n - 1)) * (w - 2 * pad);
-        const y = h - pad - (arr[k] / maxL) * (h - 2 * pad);
-        k === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-    };
-    plot(lossLin, C0);
-    plot(lossRelu, C1);
-  }
-
   /* ---------- widget ---------- */
 
   async function createWidget(container) {
-    const d3 = await loadD3();
+    let d3;
+    try {
+      d3 = await loadD3();
+    } catch {
+      container.innerHTML =
+        '<p style="opacity:0.7;font-style:italic;">Could not load the visualization library.</p>';
+      return;
+    }
     if (!document.body.contains(container)) return;
 
     const state = {
@@ -469,9 +405,6 @@
       "padding:0.45rem 0.9rem;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;font-size:0.85rem;font-weight:600;";
     const styleGhost =
       "padding:0.45rem 0.9rem;border-radius:8px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;font-size:0.85rem;";
-    const lossMarkup = d3
-      ? `<svg data-svg="loss" viewBox="0 0 620 164" style="display:block;margin:0 auto;width:100%;max-width:620px;height:auto;"></svg>`
-      : `<canvas data-canvas="loss" width="620" height="164" style="display:block;margin:0 auto;width:100%;max-width:620px;height:auto;border-radius:8px;"></canvas>`;
 
     container.innerHTML = `
       <div class="rings-viz" style="margin:1.5rem 0;font-family:system-ui,sans-serif;font-size:0.9rem;">
@@ -525,7 +458,7 @@
             <span style="color:${C0};">linear</span> vs
             <span style="color:${C1};">ReLU</span>
           </div>
-          ${lossMarkup}
+          <svg data-svg="loss" viewBox="0 0 620 164" style="display:block;margin:0 auto;width:100%;max-width:620px;height:auto;"></svg>
         </div>
       </div>
     `;
@@ -537,22 +470,15 @@
 
     const linCtx = makeContext(linearCanvas, 300);
     const reluCtx = makeContext(reluCanvas, 300);
-    const lossSvg = d3 ? d3.select(el('[data-svg="loss"]')) : null;
-    const lossCanvas = d3 ? null : el('[data-canvas="loss"]');
+    const lossSvg = d3.select(el('[data-svg="loss"]'));
 
     function render() {
       const colors = getColors();
       const predA = (x, y) => predictLinear(state.linear, x, y);
       const predB = (x, y) => predictRelu(state.relu, x, y);
-      if (d3) {
-        drawPlotD3(linearCanvas, linCtx.dpr, predA, state.pts, d3, colors);
-        drawPlotD3(reluCanvas, reluCtx.dpr, predB, state.pts, d3, colors);
-        drawLossD3(lossSvg, d3, state.lossLin, state.lossRelu, colors);
-      } else {
-        drawPlotFallback(linearCanvas, linCtx.dpr, predA, state.pts, colors);
-        drawPlotFallback(reluCanvas, reluCtx.dpr, predB, state.pts, colors);
-        drawLossFallback(lossCanvas, state.lossLin, state.lossRelu, colors);
-      }
+      drawPlotD3(linearCanvas, linCtx.dpr, predA, state.pts, d3, colors);
+      drawPlotD3(reluCanvas, reluCtx.dpr, predB, state.pts, d3, colors);
+      drawLossD3(lossSvg, d3, state.lossLin, state.lossRelu, colors);
       el('[data-acc="linear"]').textContent = accuracy(state.pts, predA).toFixed(1) + "%";
       el('[data-acc="relu"]').textContent = accuracy(state.pts, predB).toFixed(1) + "%";
       el('[data-out="epoch"]').textContent = state.epoch;
