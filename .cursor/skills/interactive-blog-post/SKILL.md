@@ -77,6 +77,8 @@ Do all of this on a feature branch with small atomic commits (Conventional Commi
 
 Always run `npm run format` (Prettier) before staging/committing so formatting stays consistent, then stage the formatted files.
 
+When adding npm dependencies, also run `pnpm install` and commit `pnpm-lock.yaml` — CI uses `pnpm install` with a frozen lockfile (see `.github/workflows/ci.yml`).
+
 ## Verify before committing
 
 - `npm run format` — Prettier; run this first, before staging and committing.
