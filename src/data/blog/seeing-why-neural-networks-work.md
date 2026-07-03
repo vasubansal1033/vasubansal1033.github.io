@@ -134,3 +134,31 @@ The loss chart underneath the plot is there mostly as a sanity check: if it's st
 <script src="/visualizations/embedding-clustering.js"></script>
 
 This is the distributional hypothesis made literal. Tokens that play the same role in the toy grammar get pulled into the same region of space because the model keeps asking them to predict the same kinds of continuations. Nobody hand-labelled "animal" — the category **emerged** from next-token prediction alone. Scale that idea up to billions of tokens and billions of parameters, and you get the semantic geometry that powers modern language models.
+## S1-4 · Memorization vs generalization, and data closes the gap
+
+### The claim
+
+A big enough network can memorize almost anything you show it — including random labels. That sounds like a superpower until you ask what happens on data it hasn't seen. On tiny training sets, the gap between train and test performance can be enormous: near-perfect on the points you fed it, mediocre everywhere else.
+
+More data doesn't just give the optimizer more examples to average over. It _constrains_ what solutions are even plausible. With enough points, the only way to fit the training set is to learn something that actually generalizes — and the train–test gap shrinks.
+
+### The setup
+
+Same noisy two-ring classification as before, but now I hold out a fixed test set the model never trains on. The network is deliberately over-parameterized — 64 ReLU units for a problem that could probably be solved with far fewer — so it _can_ memorize if the training set is small enough.
+
+I train three copies of that same architecture, differing only in how many training points each one sees: **20**, **200**, and **2000**. Everything else is identical — same noise level, same held-out test set, same optimizer.
+
+### Watch it happen
+
+Press **Train all three** and watch the three panels side by side. Each one tracks train vs test accuracy and loss as training runs. The number at the bottom of each panel is the **generalization gap** — train accuracy minus test accuracy, in percentage points.
+
+At **n = 20**, the network has more parameters than training examples. It can — and usually does — fit those 20 points almost perfectly while the test accuracy stays near a coin flip. The gap is huge.
+
+At **n = 2000**, fitting the training set without also doing well on the test set is much harder. The gap collapses. Same architecture, same noise — the only difference is how much data you gave it.
+
+The summary chart at the bottom makes the pattern explicit: generalization gap vs training set size. Small n, big gap. Large n, small gap. That's the "data is everything" punchline in one picture.
+
+<div class="viz-generalization-gap" data-viz="generalization-gap"></div>
+<script src="/visualizations/generalization-gap.js"></script>
+
+Try turning up the **label noise** or shuffling a **new data split** — the exact numbers move around, but the shape of the story stays the same. A network with enough capacity will memorize a handful of points if you let it. Feed it enough real examples and memorization stops being the easy path.
