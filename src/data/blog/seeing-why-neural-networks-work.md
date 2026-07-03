@@ -138,6 +138,25 @@ The grammar is deliberately boring. Every animal is followed by any of the three
 
 Same category, same distribution of what comes next. That's the whole trick.
 
+Concretely, the corpus is nothing more than a list of `(current_token, next_token)` pairs. Every word in a category emits the exact same set of continuations, so same-category tokens are statistically interchangeable:
+
+```text
+animals = [cat, dog, cow]
+fruits  = [apple, mango]
+verbs   = [eat, chase, see]
+attrs   = [red, yellow]
+nouns   = animals + fruits
+
+pairs = []
+for noun in nouns:            pairs += [(the, noun)]      # "the cat", "the apple"
+for a in animals:             pairs += [(a, v) for v in verbs]   # animals -> any verb
+for f in fruits:              pairs += [(f, c) for c in attrs]   # fruits  -> any color
+for v in verbs:               pairs += [(v, the)]         # verbs  -> back to "the"
+for c in attrs:               pairs += [(c, the)]         # colors -> back to "the"
+```
+
+The only signal in there is "what tends to follow me." Nothing labels `cat` and `dog` as related — they just happen to share the identical next-token set `{eat, chase, see}`, while `apple` and `mango` share `{red, yellow}`.
+
 The model itself is about as small as it gets: each token gets a **2-dimensional embedding** (so we can plot it directly, no PCA needed), and a softmax layer predicts the next token from that vector alone. Training is plain cross-entropy with full-batch gradient descent — no fancy architecture, no attention, no pre-training on the internet.
 
 ### Watch it happen
