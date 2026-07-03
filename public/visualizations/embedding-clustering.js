@@ -59,7 +59,6 @@
   const FRUITS = ["apple", "mango"];
   const VERBS = ["eat", "chase", "see"];
   const ATTRS = ["red", "yellow"];
-  const NOUNS = [...ANIMALS, ...FRUITS];
 
   function buildTrainingPairs() {
     const pairs = [];
@@ -67,12 +66,16 @@
       for (const nxt of nexts) pairs.push([TOKEN_INDEX[cur], TOKEN_INDEX[nxt]]);
     };
 
-    // "the cat eats" / "the dog chases" — nouns share category-specific continuations
-    for (const noun of NOUNS) pushAll("the", [noun]);
-    for (const a of ANIMALS) pushAll(a, VERBS);
-    for (const f of FRUITS) pushAll(f, ATTRS);
-    for (const v of VERBS) pushAll(v, ["the"]);
-    for (const c of ATTRS) pushAll(c, ["the"]);
+    // Cyclic toy grammar: the -> animal -> verb -> color -> fruit -> the
+    // e.g. "the cat sees red apple", then back to "the ...".
+    // Every token in a category shares one next-token distribution, and each
+    // category's distribution is distinct from every other's, so all five
+    // clusters separate instead of collapsing together.
+    for (const a of ANIMALS) pushAll("the", [a]); // the   -> animals
+    for (const a of ANIMALS) pushAll(a, VERBS); // animals -> verbs
+    for (const v of VERBS) pushAll(v, ATTRS); // verbs   -> colors
+    for (const c of ATTRS) pushAll(c, FRUITS); // colors  -> fruits
+    for (const f of FRUITS) pushAll(f, ["the"]); // fruits  -> the
 
     return pairs;
   }

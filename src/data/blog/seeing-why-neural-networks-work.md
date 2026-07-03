@@ -8,6 +8,7 @@ tags:
   - deep-learning
   - neural-networks
   - visualizations
+  - vibe-coded
 description: Four interactive visual proofs — activations, depth, embeddings, and generalization — that make core neural-network ideas concrete.
 ---
 
@@ -134,34 +135,33 @@ I built a tiny made-up language with three buckets of words:
 - **fruits**: apple, mango
 - **verbs**: eat, chase, see
 
-The grammar is deliberately boring. Every animal is followed by any of the three verbs with equal probability — "the cat eats", "the dog chases", "the cow sees", and so on. Every fruit is followed by one of two color words (red, yellow) that only ever appear after fruits. Verbs always lead back to "the."
+The grammar is a deliberately boring little cycle: `the → animal → verb → color → fruit → the`. So a "sentence" reads like "the cat sees red apple", then it loops back to "the" and starts again. Every animal is followed by any of the three verbs with equal probability, every verb by a color, every color by a fruit, and every fruit by "the".
 
-Same category, same distribution of what comes next. That's the whole trick.
+The important part is that each category has its _own_ distinct next-token distribution — animals predict verbs, verbs predict colors, colors predict fruits, fruits predict "the". No two categories share what comes next, which is exactly what keeps their clusters apart.
 
 Concretely, the corpus is nothing more than a list of `(current_token, next_token)` pairs. Every word in a category emits the exact same set of continuations, so same-category tokens are statistically interchangeable:
 
 ```text
 animals = [cat, dog, cow]
-fruits  = [apple, mango]
 verbs   = [eat, chase, see]
-attrs   = [red, yellow]
-nouns   = animals + fruits
+attrs   = [red, yellow]     # colors
+fruits  = [apple, mango]
 
 pairs = []
-for noun in nouns:            pairs += [(the, noun)]      # "the cat", "the apple"
-for a in animals:             pairs += [(a, v) for v in verbs]   # animals -> any verb
-for f in fruits:              pairs += [(f, c) for c in attrs]   # fruits  -> any color
-for v in verbs:               pairs += [(v, the)]         # verbs  -> back to "the"
-for c in attrs:               pairs += [(c, the)]         # colors -> back to "the"
+for a in animals:   pairs += [(the, a)]              # the     -> animals
+for a in animals:   pairs += [(a, v) for v in verbs] # animals -> any verb
+for v in verbs:     pairs += [(v, c) for c in attrs] # verbs   -> any color
+for c in attrs:     pairs += [(c, f) for f in fruits] # colors  -> any fruit
+for f in fruits:    pairs += [(f, the)]              # fruits  -> the
 ```
 
-The only signal in there is "what tends to follow me." Nothing labels `cat` and `dog` as related — they just happen to share the identical next-token set `{eat, chase, see}`, while `apple` and `mango` share `{red, yellow}`.
+The only signal in there is "what tends to follow me." Nothing labels `cat` and `dog` as related — they just happen to share the identical next-token set `{eat, chase, see}`, while `eat` and `chase` share `{red, yellow}`, and `apple` and `mango` share `{the}`. Because those four signatures are all different, the four content clusters (plus "the") land in different places instead of piling up together.
 
 The model itself is about as small as it gets: each token gets a **2-dimensional embedding** (so we can plot it directly, no PCA needed), and a softmax layer predicts the next token from that vector alone. Training is plain cross-entropy with full-batch gradient descent — no fancy architecture, no attention, no pre-training on the internet.
 
 ### Watch it happen
 
-Hit **Train** and watch the scatter plot. At step zero the points are scattered at random. Within a few hundred steps you should see the animals pull together, the fruits pull together, and the verbs form their own little island — even though the model was never told which words belong together.
+Hit **Train** and watch the scatter plot. At step zero the points are scattered at random. Within a few hundred steps you should see each category collapse into its own tight group — animals in one spot, verbs in another, colors and fruits in their own corners, with "the" off on its own — even though the model was never told which words belong together.
 
 Pick a token in the **Nearest neighbors** panel on the right. After training settles, cat's three closest vectors should be dog and cow, not words that merely rhyme or share letters. Same story for apple and mango. The checkmarks mean "same category" — and they should dominate once the loss has had time to drop.
 
