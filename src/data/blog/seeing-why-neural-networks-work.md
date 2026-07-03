@@ -75,6 +75,22 @@ Five linear layers in a row is still one straight decision boundary. Same as one
 
 Put ReLU between those same five layers, though, and the stack can finally curve. Same depth, same data, same training — but now it can wrap the ring.
 
+### Why the math forces this
+
+It's not a quirk of the optimizer — it's algebra. A linear layer is just an affine map $\mathbf{h} = W\mathbf{x} + \mathbf{b}$. Stack five of them with nothing in between and you get a composition of affine maps:
+
+$$
+\mathbf{y} = W_5\big(W_4\big(W_3\big(W_2(W_1\mathbf{x} + \mathbf{b}_1) + \mathbf{b}_2\big) + \mathbf{b}_3\big) + \mathbf{b}_4\big) + \mathbf{b}_5
+$$
+
+Multiplying it out, every weight matrix collapses into a single product and every bias folds into one vector:
+
+$$
+\mathbf{y} = \underbrace{\big(W_5 W_4 W_3 W_2 W_1\big)}_{W_{\text{eff}}}\,\mathbf{x} + \underbrace{\big(W_5 W_4 W_3 W_2 \mathbf{b}_1 + \cdots + \mathbf{b}_5\big)}_{\mathbf{b}_{\text{eff}}} = W_{\text{eff}}\,\mathbf{x} + \mathbf{b}_{\text{eff}}
+$$
+
+So no matter how many linear layers you stack, the whole network is exactly equivalent to a single layer $\mathbf{y} = W_{\text{eff}}\mathbf{x} + \mathbf{b}_{\text{eff}}$. That's why models **A** and **B** below can't ever differ in what they're capable of. A ReLU breaks the chain — $\max(0, \cdot)$ is not affine, so the matrices can no longer be merged, and the network keeps its depth.
+
 ### The setup
 
 Same concentric rings as before: inner class, outer class, no straight line that splits them cleanly.
