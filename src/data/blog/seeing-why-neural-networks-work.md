@@ -77,19 +77,19 @@ Put ReLU between those same five layers, though, and the stack can finally curve
 
 ### Why the math forces this
 
-It's not a quirk of the optimizer — it's algebra. A linear layer is just an affine map $\mathbf{h} = W\mathbf{x} + \mathbf{b}$. Stack five of them with nothing in between and you get a composition of affine maps:
+It's not a quirk of the optimizer — it's algebra. Write the activation of layer $l$ as $\mathbf{a}^{(l)}$, with the input as $\mathbf{a}^{(0)} = \mathbf{x}$. Each layer's weight matrix $W^{(l)}$ stores one neuron's weights per column, so its pre-activation is $\mathbf{z}^{(l)} = {W^{(l)}}^{\top}\mathbf{a}^{(l-1)} + \mathbf{b}^{(l)}$. With no nonlinearity, $\mathbf{a}^{(l)} = \mathbf{z}^{(l)}$, and stacking five layers just composes those affine maps:
 
 $$
-\mathbf{y} = W_5\big(W_4\big(W_3\big(W_2(W_1\mathbf{x} + \mathbf{b}_1) + \mathbf{b}_2\big) + \mathbf{b}_3\big) + \mathbf{b}_4\big) + \mathbf{b}_5
+\hat{\mathbf{y}} = \mathbf{a}^{(5)} = {W^{(5)}}^{\top}\!\Big({W^{(4)}}^{\top}\!\big({W^{(3)}}^{\top}\!\big({W^{(2)}}^{\top}\!\big({W^{(1)}}^{\top}\mathbf{x} + \mathbf{b}^{(1)}\big) + \mathbf{b}^{(2)}\big) + \mathbf{b}^{(3)}\big) + \mathbf{b}^{(4)}\Big) + \mathbf{b}^{(5)}
 $$
 
 Multiplying it out, every weight matrix collapses into a single product and every bias folds into one vector:
 
 $$
-\mathbf{y} = \underbrace{\big(W_5 W_4 W_3 W_2 W_1\big)}_{W_{\text{eff}}}\,\mathbf{x} + \underbrace{\big(W_5 W_4 W_3 W_2 \mathbf{b}_1 + \cdots + \mathbf{b}_5\big)}_{\mathbf{b}_{\text{eff}}} = W_{\text{eff}}\,\mathbf{x} + \mathbf{b}_{\text{eff}}
+\hat{\mathbf{y}} = \underbrace{\Big({W^{(5)}}^{\top}{W^{(4)}}^{\top}{W^{(3)}}^{\top}{W^{(2)}}^{\top}{W^{(1)}}^{\top}\Big)}_{W_{\text{eff}}^{\top}}\,\mathbf{x} + \underbrace{\sum_{l=1}^{5}\Bigg(\prod_{k=l+1}^{5}{W^{(k)}}^{\top}\Bigg)\mathbf{b}^{(l)}}_{\mathbf{b}_{\text{eff}}} = W_{\text{eff}}^{\top}\,\mathbf{x} + \mathbf{b}_{\text{eff}}
 $$
 
-So no matter how many linear layers you stack, the whole network is exactly equivalent to a single layer $\mathbf{y} = W_{\text{eff}}\mathbf{x} + \mathbf{b}_{\text{eff}}$. That's why models **A** and **B** below can't ever differ in what they're capable of. A ReLU breaks the chain — $\max(0, \cdot)$ is not affine, so the matrices can no longer be merged, and the network keeps its depth.
+So no matter how many linear layers you stack, the whole network is exactly equivalent to a single layer $\hat{\mathbf{y}} = W_{\text{eff}}^{\top}\mathbf{x} + \mathbf{b}_{\text{eff}}$. That's why models **A** and **B** below can't ever differ in what they're capable of. A ReLU breaks the chain — $\mathbf{a}^{(l)} = \max(0,\, \mathbf{z}^{(l)})$ is not affine, so the matrices can no longer be merged, and the network keeps its depth.
 
 ### The setup
 
