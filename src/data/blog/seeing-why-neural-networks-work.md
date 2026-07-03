@@ -1,7 +1,7 @@
 ---
 title: Seeing why neural networks work
 pubDatetime: 2026-07-03T11:30:00Z
-modDatetime: 2026-07-03T13:00:00Z
+modDatetime: 2026-07-03T14:15:00Z
 featured: true
 draft: false
 tags:
@@ -119,6 +119,18 @@ Tweak **noise** or the **learning rate** if you want; either one reshuffles the 
 
 The takeaway is blunt: depth alone doesn't buy expressiveness. Nonlinearity between layers is what turns a stack of matrices into something that can bend. Without it, you're always drawing a line — no matter how tall the stack gets.
 
+### A bit of history, and why depth only counts with bends
+
+The intuition that "deeper is better" feels natural — more layers ought to mean more computation, more abstraction, more power. That story only became true once people understood what depth actually buys you.
+
+In 1989, Cybenko and Hornik independently proved the **universal approximation theorem**: a network with even a single hidden layer and a nonlinear activation can approximate any continuous function, given enough width. So depth wasn't strictly _necessary_ for expressiveness — width could do the job. What depth buys you, when it's real, is **efficiency**: the same function can often be represented with far fewer parameters if you stack nonlinear layers rather than blowing up one wide layer.
+
+The catch — and the whole point of the demo above — is that those theorems assume nonlinearity _between_ layers. Without it, you're not stacking functions; you're multiplying matrices. Linear algebra has known this for a long time: composing linear maps is still a linear map. A 100-layer linear network is a marketing number, not a capability.
+
+That distinction mattered enormously in practice. When deep nets finally started winning benchmarks in the 2010s (AlexNet on ImageNet in 2012, then ResNets, Transformers), the depth was always **nonlinear** depth — ReLUs, skip connections, attention — never a tall stack of raw matrix multiplies. ResNet's 152 layers work because each block can learn a residual _bend_; remove the activations and the whole tower collapses to one linear map, just like model **B** above.
+
+So when someone says "we added more layers," the honest follow-up is: "and what nonlinear thing sits between them?" If the answer is nothing, the depth is a costume — and the math panel in the widget will show you the single effective matrix hiding underneath.
+
 ## S1-3 · Embeddings learn similarity from nothing but next-token
 
 ### The claim
@@ -161,7 +173,7 @@ The model itself is about as small as it gets: each token gets a **2-dimensional
 
 ### Watch it happen
 
-Hit **Train** and watch the scatter plot. At step zero the points are scattered at random. Within a few hundred steps you should see each category collapse into its own tight group — animals in one spot, verbs in another, colors and fruits in their own corners, with "the" off on its own — even though the model was never told which words belong together.
+Hit **Train** and watch the scatter plot. At step zero the points are scattered at random. Within a few hundred steps you should see each category collapse into its own tight group — animals in one spot, verbs in another, colors and fruits in their own corners, with "the" off on its own — even though the model was never told which words belong together. If clusters overlap on screen, **scroll to zoom** and **hover** a point to read what's underneath.
 
 Pick a token in the **Nearest neighbors** panel on the right. After training settles, cat's three closest vectors should be dog and cow, not words that merely rhyme or share letters. Same story for apple and mango. The checkmarks mean "same category" — and they should dominate once the loss has had time to drop.
 
@@ -172,13 +184,35 @@ The loss chart underneath the plot is there mostly as a sanity check: if it's st
 
 This is the distributional hypothesis made literal. Tokens that play the same role in the toy grammar get pulled into the same region of space because the model keeps asking them to predict the same kinds of continuations. Nobody hand-labelled "animal" — the category **emerged** from next-token prediction alone. Scale that idea up to billions of tokens and billions of parameters, and you get the semantic geometry that powers modern language models.
 
+### A bit of history, and why "you shall know a word by the company it keeps"
+
+The idea that meaning lives in context is older than neural networks. In 1957, the linguist J. R. Firth put it plainly: _"You shall know a word by the company it keeps."_ Two words that tend to appear in the same kinds of sentences — near the same neighbours — are probably playing a similar role, even if nobody ever told you they belong to the same category. That's the **distributional hypothesis**, and the scatter plot above is a miniature proof of it.
+
+Neural nets turned that hypothesis into something you could train. Bengio et al.'s 2003 language model learned a distributed word representation as a side effect of predicting the next word. A decade later, **word2vec** (Mikolov et al., 2013) made the geometry famous: train a shallow net on next-token prediction and suddenly `king − man + woman ≈ queen`. Nobody encoded royalty, gender, or arithmetic — the relationships fell out of the co-occurrence statistics.
+
+The famous analogy still holds. Imagine sorting people at a party by who they tend to stand next to. You never asked anyone's job title, but teachers drift toward teachers, musicians toward musicians. Same trick, different scale: `cat` and `dog` end up close because both are followed by `{eat, chase, see}` in our toy grammar, not because anyone labelled them "animal."
+
+Modern language models are the same idea with more parameters and more data. **GloVe** counted co-occurrences directly; **ELMo** made embeddings context-dependent; **Transformers** replaced the fixed lookup table with attention over the whole sentence. The surface architecture changed, but the lesson from the tiny model above didn't: predict what comes next from context, and similarity **emerges**. The categories were never in the loss function — they were in the statistics all along.
+
 ## S1-4 · Memorization vs generalization, and data closes the gap
 
 ### The claim
 
-A big enough network can memorize almost anything you show it — including random labels. That sounds like a superpower until you ask what happens on data it hasn't seen. On tiny training sets, the gap between train and test performance can be enormous: near-perfect on the points you fed it, mediocre everywhere else.
+Picture a student cramming for a quiz with only twenty flashcards. They can memorize every card perfectly — but ask a slightly different question on exam day and they're lost. Give them two thousand varied examples instead, and they start to notice the _pattern_ behind the questions. That's the whole story in one analogy.
 
-More data doesn't just give the optimizer more examples to average over. It _constrains_ what solutions are even plausible. With enough points, the only way to fit the training set is to learn something that actually generalizes — and the train–test gap shrinks.
+A big enough neural network is that student with a photographic memory. On a tiny training set it can memorize every point — including **random labels** — while doing no better than chance on held-out data. More data doesn't just mean more examples to average over; it **narrows the set of solutions** that fit. With enough points, memorizing stops being the easy way to drive training loss down, and the model is pushed toward something that actually generalizes.
+
+### A concrete example before the demo
+
+Think about the three panels below as the same student, given different amounts of practice:
+
+| Training size | What tends to happen                       | Intuition                                                                         |
+| ------------- | ------------------------------------------ | --------------------------------------------------------------------------------- |
+| **n = 20**    | Train accuracy → ~100%, test accuracy ~50% | More weights than examples — the net can treat each point as its own special case |
+| **n = 200**   | Train high, test noticeably better         | Some structure is cheaper than memorizing, but the fit is still loose             |
+| **n = 2000**  | Train and test both climb, gap shrinks     | Fitting thousands of ring points _without_ learning the ring shape is hard        |
+
+The rings aren't a trick. They're a clean stand-in for any real problem where a smooth rule exists but the training set can be small: diagnosing from a handful of scans, recommending from sparse clicks, fine-tuning on a thin slice of documents. The question is always the same: did the model learn the rule, or just the flashcards?
 
 ### The setup
 
@@ -190,13 +224,25 @@ I train three copies of that same architecture, differing only in how many train
 
 Press **Train all three** and watch the three panels side by side. Each one tracks train vs test accuracy and loss as training runs. The number at the bottom of each panel is the **generalization gap** — train accuracy minus test accuracy, in percentage points.
 
-At **n = 20**, the network has more parameters than training examples. It can — and usually does — fit those 20 points almost perfectly while the test accuracy stays near a coin flip. The gap is huge.
+Start with **n = 20**. Watch train accuracy shoot up while test accuracy barely moves. The network is doing the flashcard thing: bending itself around twenty individual points. With 64 hidden units and only 20 examples, it has more than enough freedom to give each training point its own little pocket without discovering that both classes live on rings.
 
-At **n = 2000**, fitting the training set without also doing well on the test set is much harder. The gap collapses. Same architecture, same noise — the only difference is how much data you gave it.
+Switch your attention to **n = 2000**. Fitting ~1000 points per class _without_ learning something ring-shaped is much harder. Train and test rise together; the gap collapses. Same architecture, same noise, same test set — you only changed how much evidence the optimizer had to work with.
 
-The summary chart at the bottom makes the pattern explicit: generalization gap vs training set size. Small n, big gap. Large n, small gap. That's the "data is everything" punchline in one picture.
+The summary chart at the bottom plots that gap against training set size. It's the visual version of "data is everything": small _n_, big gap; large _n_, small gap.
 
 <div class="viz-generalization-gap" data-viz="generalization-gap"></div>
 <script src="/visualizations/generalization-gap.js"></script>
 
 Try turning up the **label noise** or shuffling a **new data split** — the exact numbers move around, but the shape of the story stays the same. A network with enough capacity will memorize a handful of points if you let it. Feed it enough real examples and memorization stops being the easy path.
+
+### A bit of history, and why this stopped being "just theory"
+
+For decades, statistical learning theory framed generalization as a **bias–variance tradeoff**: simple models underfit (high bias), complex models overfit (high variance). The sweet spot was supposed to be a model just complex enough for the data. That picture is still useful — but deep learning broke it in uncomfortable ways.
+
+In 2017, Zhang et al. ran an experiment that shocked a lot of people: the **same large network that generalizes on real labels can also memorize completely random labels**, achieving zero training error while test error stays at chance. Capacity alone doesn't guarantee generalization; what matters is whether the learned function aligns with structure in the data. The demo above is a gentler, visual cousin of that result — at _n = 20_ you see the memorization side; at _n = 2000_ you see the structure-winning side.
+
+Around the same time, the field was rediscovering an older idea: **more data is a form of regularization**. When ImageNet-scale datasets arrived in the 2010s, the winning strategy wasn't just bigger models — it was bigger models _trained on more examples_. The extra data ruled out most of the wacky memorizing solutions and left the ones that captured real regularities. Modern LLMs push the same lesson to an extreme: trillions of tokens don't just improve fluency, they constrain what the model can plausibly have learned.
+
+There's a wrinkle worth knowing. Classical theory predicted that once a model is complex enough to interpolate the training set, test error should get _worse_. In practice, people sometimes see **double descent** — performance dips near the interpolation threshold, then improves again as capacity grows further. The rings demo doesn't show that second climb (we hold architecture fixed), but it's a reminder that "bigger model = worse generalization" is too simple. The through-line that _does_ hold: **without enough data, a capable model will use its capacity to memorize; with enough data, memorization stops being the path of least resistance.**
+
+That's why practitioners reach for more data before more parameters, and why the generalization gap in the chart above is one of the most honest diagnostics you have: it tells you, in one number, whether your model learned the ring or just the flashcards.
