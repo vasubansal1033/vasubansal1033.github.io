@@ -64,3 +64,39 @@ If you'd like a more visual, intuition-first take on this, I really enjoyed [Hid
 - Nonlinearity is the whole game. Stacking linear layers only ever gets you another straight line; the activation is what lets a network bend space and carve out curved boundaries.
 - The bends add up. Each hidden unit contributes one simple fold, and stacking enough of them lets a network approximate almost any shape.
 - Shape and slope are two separate jobs. An activation has to be nonlinear (so the network can curve) _and_ keep a healthy gradient across depth (so it can actually train) — which is precisely why ReLU pushed sigmoid and tanh aside.
+## S1-2 · Depth without nonlinearity is a lie
+
+### The claim
+
+Stacking more layers sounds like it should buy you more power. But if every layer is just a matrix multiply — no ReLU, no sigmoid in the middle, nothing that actually _bends_ the output — you're not building depth at all. You're building one fat linear map in disguise.
+
+Five linear layers in a row is still one straight decision boundary. Same as one layer. Same ceiling on accuracy. The depth is a costume.
+
+Put ReLU between those same five layers, though, and the stack can finally curve. Same depth, same data, same training — but now it can wrap the ring.
+
+### The setup
+
+Same concentric rings as before: inner class, outer class, no straight line that splits them cleanly.
+
+This time I train **three** tiny classifiers on identical points:
+
+- **A** — one linear layer with a sigmoid (logistic regression),
+- **B** — five stacked linear layers (2→8→8→8→8→1) with **no** activation between them, then a sigmoid on top, and
+- **C** — the same five-layer stack, but with ReLU after each hidden layer.
+
+Everything else matches: binary cross-entropy, full-batch gradient descent, same learning rate. The only difference is whether anything nonlinear happens _between_ the matrix multiplies.
+
+### Watch it happen
+
+Press **Train all three** and watch the panels side by side. Each one draws confidence contours with the thick line at 50/50, and the training accuracy ticks up live.
+
+A and B should look like twins — straight boundaries, accuracy stuck near a coin flip. That's not a bug. B really is just A wearing five hats; the bonus panel multiplies B's weight matrices together and prints the single effective matrix and bias that prove it.
+
+C is the outlier. Same depth as B, but the ReLUs let it fold the plane and climb toward ~99% on the rings.
+
+Tweak **noise** or the **learning rate** if you want; either one reshuffles the data and restarts all three from fresh weights.
+
+<div class="viz-linear-collapse" data-viz="linear-collapse"></div>
+<script src="/visualizations/linear-collapse.js"></script>
+
+The takeaway is blunt: depth alone doesn't buy expressiveness. Nonlinearity between layers is what turns a stack of matrices into something that can bend. Without it, you're always drawing a line — no matter how tall the stack gets.
