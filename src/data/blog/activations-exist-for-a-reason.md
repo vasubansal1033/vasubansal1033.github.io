@@ -42,11 +42,15 @@ Same loss (binary cross-entropy), same optimizer (full-batch gradient descent). 
 
 ### Proof
 
-Run the experiment below. Each panel shows the decision region (background), the data points (dots), and the final accuracy after training.
+Hit **Train both** below and watch it happen live. Both models train on the exact same data with the same optimizer — the only difference is model B's ReLU hidden layer. Each panel shows the decision region (shaded by confidence), the boundary (the thick line), the data points, and the live training accuracy. The chart underneath tracks each model's training loss.
+
+Play with the knobs: change the **dataset** (rings, moons, spiral, XOR), add **noise**, tweak the **learning rate**, or resize the **ReLU hidden layer**. Every change reshuffles the data and resets training.
 
 <div class="viz-rings" data-viz="rings-activation"></div>
 <script src="/visualizations/rings-activation.js"></script>
 
-The linear model draws a straight boundary and stalls near ~55% accuracy — barely better than guessing. The ReLU model bends around the inner ring and reaches ~99%.
+The linear model draws a straight boundary and flattens out near a coin-flip — it is physically incapable of bending. The ReLU model folds the plane, wraps the inner ring, and climbs toward ~99%.
 
 Only the activation changed.
+
+Try switching the dataset to **XOR** — the historical example that stalled neural-net research for years. Model A sits near 50% while model B solves it cleanly.
