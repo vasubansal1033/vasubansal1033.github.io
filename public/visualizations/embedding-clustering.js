@@ -210,17 +210,44 @@
     return [x0 - padX, x1 + padX, y0 - padY, y1 + padY];
   }
 
-  function drawEmbeddingPlot(canvas, dpr, model, d3, colors, step) {
-    const W = 420;
-    const H = 340;
-    const m = { t: 18, r: 18, b: 36, l: 36 };
+  const PLOT_W = 420;
+  const PLOT_H = 340;
+  const PLOT_M = { t: 18, r: 18, b: 36, l: 36 };
+
+  // Map screen (drawn) coordinates back so we can hit-test the mouse.
+  function computePositions(model, d3, view) {
+    const [x0, x1, y0, y1] = embeddingExtents(model);
+    const bx = d3.scaleLinear([x0, x1], [PLOT_M.l, PLOT_W - PLOT_M.r]);
+    const by = d3.scaleLinear([y0, y1], [PLOT_H - PLOT_M.b, PLOT_M.t]);
+    const positions = [];
+    for (let i = 0; i < TOKENS.length; i++) {
+      positions.push({
+        i,
+        tok: TOKENS[i],
+        cat: CATEGORY[TOKENS[i]],
+        px: view.tx + view.k * bx(model.embed[i][0]),
+        py: view.ty + view.k * by(model.embed[i][1]),
+      });
+    }
+    return positions;
+  }
+
+  function drawEmbeddingPlot(
+    canvas,
+    dpr,
+    model,
+    d3,
+    colors,
+    step,
+    view,
+    hover
+  ) {
+    const W = PLOT_W;
+    const H = PLOT_H;
+    const m = PLOT_M;
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
-
-    const [x0, x1, y0, y1] = embeddingExtents(model);
-    const x = d3.scaleLinear([x0, x1], [m.l, W - m.r]);
-    const y = d3.scaleLinear([y0, y1], [H - m.b, m.t]);
 
     ctx.save();
     ctx.beginPath();
@@ -255,22 +282,85 @@
     ctx.fillText("embedding dim 1", 0, 0);
     ctx.restore();
 
-    for (let i = 0; i < TOKENS.length; i++) {
-      const tok = TOKENS[i];
-      const px = x(model.embed[i][0]);
-      const py = y(model.embed[i][1]);
-      const cat = CATEGORY[tok];
+    const positions = computePositions(model, d3, view);
+    const hoverCat = hover >= 0 ? positions[hover].cat : null;
+
+    // Only label a point when it has room (no close neighbor on screen), or
+    // when it (or a same-category sibling) is being hovered. This declutters
+    // the tight clusters until you zoom in or hover.
+    const showLabel = new Array(positions.length).fill(false);
+    for (let a = 0; a < positions.length; a++) {
+      let minD = Infinity;
+      for (let b = 0; b < positions.length; b++) {
+        if (a === b) continue;
+        const dx = positions[a].px - positions[b].px;
+        const dy = positions[a].py - positions[b].py;
+        minD = Math.min(minD, Math.hypot(dx, dy));
+      }
+      showLabel[a] = minD > 30;
+    }
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(m.l, m.t, W - m.l - m.r, H - m.t - m.b);
+    ctx.clip();
+
+    for (const p of positions) {
+      const isHover = p.i === hover;
+      const dim = hover >= 0 && !isHover && p.cat !== hoverCat;
+      ctx.globalAlpha = dim ? 0.35 : 1;
       ctx.beginPath();
-      ctx.arc(px, py, 7, 0, Math.PI * 2);
-      ctx.fillStyle = CAT_COLOR[cat];
+      ctx.arc(p.px, p.py, isHover ? 9 : 7, 0, Math.PI * 2);
+      ctx.fillStyle = CAT_COLOR[p.cat];
       ctx.fill();
-      ctx.lineWidth = 1.2;
-      ctx.strokeStyle = colors.pointStroke;
+      ctx.lineWidth = isHover ? 2 : 1.2;
+      ctx.strokeStyle = isHover ? colors.text : colors.pointStroke;
       ctx.stroke();
-      ctx.fillStyle = colors.text;
-      ctx.font = "600 11px system-ui,sans-serif";
+
+      if (showLabel[p.i] || isHover || p.cat === hoverCat) {
+        ctx.globalAlpha = dim ? 0.5 : 1;
+        ctx.fillStyle = colors.text;
+        ctx.font = `${isHover ? "700" : "600"} 11px system-ui,sans-serif`;
+        ctx.textAlign = "left";
+        ctx.fillText(p.tok, p.px + 10, p.py + 4);
+      }
+    }
+    ctx.globalAlpha = 1;
+    ctx.restore();
+
+    // Tooltip listing the hovered token plus any others stacked on top of it.
+    if (hover >= 0) {
+      const hp = positions[hover];
+      const stacked = positions
+        .filter(p => Math.hypot(p.px - hp.px, p.py - hp.py) < 12)
+        .sort((a, b) => a.tok.localeCompare(b.tok));
+      const lines = stacked.map(p => `${p.tok} · ${CATEGORY_LABEL[p.cat]}`);
+      ctx.font = "11px system-ui,sans-serif";
+      const tw = Math.max(...lines.map(l => ctx.measureText(l).width)) + 16;
+      const th = lines.length * 15 + 10;
+      let bx = hp.px + 14;
+      let by = hp.py - th - 6;
+      if (bx + tw > W - 4) bx = hp.px - tw - 14;
+      if (by < 4) by = hp.py + 12;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(bx, by, tw, th, 6);
+      else ctx.rect(bx, by, tw, th);
+      ctx.fillStyle = colors.isDark
+        ? "rgba(15,23,42,0.95)"
+        : "rgba(255,255,255,0.97)";
+      ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = colors.axis;
+      ctx.stroke();
       ctx.textAlign = "left";
-      ctx.fillText(tok, px + 9, py + 4);
+      for (let i = 0; i < stacked.length; i++) {
+        ctx.fillStyle = CAT_COLOR[stacked[i].cat];
+        ctx.beginPath();
+        ctx.arc(bx + 8, by + 12 + i * 15, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = colors.text;
+        ctx.fillText(lines[i], bx + 16, by + 15 + i * 15);
+      }
     }
 
     ctx.fillStyle = colors.text;
@@ -278,6 +368,7 @@
     ctx.textAlign = "right";
     ctx.globalAlpha = 0.65;
     ctx.fillText(`step ${step}`, W - m.r, m.t + 10);
+    if (view.k > 1.01) ctx.fillText(`${view.k.toFixed(1)}×`, W - m.r, m.t + 24);
     ctx.globalAlpha = 1;
   }
 
@@ -363,6 +454,10 @@
       running: false,
       raf: null,
       focusToken: "cat",
+      view: { k: 1, tx: 0, ty: 0 },
+      hover: -1,
+      lastPos: [],
+      drag: null,
     };
 
     const styleBtn =
@@ -385,20 +480,21 @@
         <div style="padding:0.85rem 1rem;margin-bottom:1rem;border:1px solid var(--border,rgba(120,120,120,0.25));border-radius:10px;line-height:1.55;opacity:0.9;">
           <div style="font-weight:600;margin-bottom:0.35rem;">Toy corpus (same-category tokens share continuations)</div>
           <div style="font-size:0.85rem;">
-            Animals → <code style="opacity:0.9;">eat · chase · see</code> &nbsp;·&nbsp;
-            Fruits → <code style="opacity:0.9;">red · yellow</code> &nbsp;·&nbsp;
-            Verbs → <code style="opacity:0.9;">the</code>
+            the → <code style="opacity:0.9;">animal</code> → <code style="opacity:0.9;">verb</code> → <code style="opacity:0.9;">color</code> → <code style="opacity:0.9;">fruit</code> → the
           </div>
           <div style="font-size:0.8rem;margin-top:0.45rem;opacity:0.75;">
-            e.g. “the cat eats”, “the dog chases”, “the apple red”, “the mango yellow”
+            e.g. “the cat sees red apple”, “the dog chases yellow mango” — each category shares one next-token distribution, and every category's is distinct.
           </div>
         </div>
 
         <div style="display:flex;flex-wrap:wrap;gap:1.25rem;justify-content:center;align-items:flex-start;">
           <div style="flex:1 1 300px;max-width:440px;">
             <div style="font-weight:600;margin-bottom:0.35rem;text-align:center;">Learned embeddings (2D)</div>
-            <canvas data-canvas="embed" width="420" height="340" style="width:100%;height:auto;border-radius:10px;border:1px solid var(--border,rgba(120,120,120,0.25));"></canvas>
-            <div style="margin-top:0.5rem;font-size:0.78rem;opacity:0.8;text-align:center;">${legend}</div>
+            <canvas data-canvas="embed" width="420" height="340" style="width:100%;height:auto;border-radius:10px;border:1px solid var(--border,rgba(120,120,120,0.25));touch-action:none;cursor:grab;"></canvas>
+            <div style="margin-top:0.35rem;font-size:0.72rem;opacity:0.7;text-align:center;">
+              scroll to zoom · drag to pan · hover a point · double-click to reset view
+            </div>
+            <div style="margin-top:0.35rem;font-size:0.78rem;opacity:0.8;text-align:center;">${legend}</div>
             <svg data-svg="loss" viewBox="0 0 420 120" style="display:block;margin:0.75rem auto 0;width:100%;max-width:420px;height:auto;"></svg>
           </div>
 
@@ -434,7 +530,7 @@
     const embedCtx = makeContext(embedCanvas, 420, 340);
     const lossSvg = d3.select(el('[data-svg="loss"]'));
 
-    function render() {
+    function drawPlot() {
       const colors = getColors();
       drawEmbeddingPlot(
         embedCanvas,
@@ -442,8 +538,16 @@
         state.model,
         d3,
         colors,
-        state.step
+        state.step,
+        state.view,
+        state.hover
       );
+      state.lastPos = computePositions(state.model, d3, state.view);
+    }
+
+    function render() {
+      const colors = getColors();
+      drawPlot();
       drawLoss(lossSvg, d3, state.losses, colors);
       renderNNList(container, state.model, state.focusToken);
       el('[data-out="step"]').textContent = state.step;
@@ -457,6 +561,8 @@
       state.model = makeModel();
       state.losses = [];
       state.step = 0;
+      state.view = { k: 1, tx: 0, ty: 0 };
+      state.hover = -1;
       render();
     }
 
@@ -497,9 +603,98 @@
       stop();
       resetModel();
     });
-    el('[data-ctl="focus"]').addEventListener("change", e => {
+    const focusSelect = el('[data-ctl="focus"]');
+    focusSelect.addEventListener("change", e => {
       state.focusToken = e.target.value;
       render();
+    });
+
+    function toLocal(e) {
+      const r = embedCanvas.getBoundingClientRect();
+      return [
+        (e.clientX - r.left) * (PLOT_W / r.width),
+        (e.clientY - r.top) * (PLOT_H / r.height),
+      ];
+    }
+
+    function pickNearest(mx, my) {
+      let best = -1;
+      let bd = Infinity;
+      for (const p of state.lastPos) {
+        const d = Math.hypot(p.px - mx, p.py - my);
+        if (d < bd) {
+          bd = d;
+          best = p.i;
+        }
+      }
+      return bd <= 14 ? best : -1;
+    }
+
+    embedCanvas.addEventListener("wheel", e => {
+      e.preventDefault();
+      const [mx, my] = toLocal(e);
+      const factor = Math.exp(-e.deltaY * 0.0015);
+      const kNew = Math.min(40, Math.max(1, state.view.k * factor));
+      const ratio = kNew / state.view.k;
+      state.view.tx = mx - ratio * (mx - state.view.tx);
+      state.view.ty = my - ratio * (my - state.view.ty);
+      state.view.k = kNew;
+      if (kNew === 1) {
+        state.view.tx = 0;
+        state.view.ty = 0;
+      }
+      if (!state.running) drawPlot();
+    });
+
+    embedCanvas.addEventListener("mousedown", e => {
+      const [mx, my] = toLocal(e);
+      state.drag = { x: mx, y: my, tx: state.view.tx, ty: state.view.ty };
+      embedCanvas.style.cursor = "grabbing";
+    });
+
+    window.addEventListener("mouseup", () => {
+      if (state.drag) {
+        state.drag = null;
+        embedCanvas.style.cursor = "grab";
+      }
+    });
+
+    embedCanvas.addEventListener("mousemove", e => {
+      const [mx, my] = toLocal(e);
+      if (state.drag) {
+        state.view.tx = state.drag.tx + (mx - state.drag.x);
+        state.view.ty = state.drag.ty + (my - state.drag.y);
+        if (!state.running) drawPlot();
+        return;
+      }
+      const hit = pickNearest(mx, my);
+      embedCanvas.style.cursor = hit >= 0 ? "pointer" : "grab";
+      if (hit !== state.hover) {
+        state.hover = hit;
+        if (!state.running) drawPlot();
+      }
+    });
+
+    embedCanvas.addEventListener("mouseleave", () => {
+      if (state.hover !== -1) {
+        state.hover = -1;
+        if (!state.running) drawPlot();
+      }
+    });
+
+    embedCanvas.addEventListener("click", e => {
+      const [mx, my] = toLocal(e);
+      const hit = pickNearest(mx, my);
+      if (hit >= 0 && TOKENS[hit] !== "the") {
+        state.focusToken = TOKENS[hit];
+        focusSelect.value = state.focusToken;
+        render();
+      }
+    });
+
+    embedCanvas.addEventListener("dblclick", () => {
+      state.view = { k: 1, tx: 0, ty: 0 };
+      if (!state.running) drawPlot();
     });
 
     const themeObserver = new MutationObserver(() => {
