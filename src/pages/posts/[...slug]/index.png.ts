@@ -11,8 +11,7 @@ export async function getStaticPaths() {
 
   const posts = await getCollection("blog").then(p =>
     p.filter(
-      ({ data }) =>
-        (import.meta.env.DEV || !data.draft) && !data.ogImage
+      ({ data }) => (import.meta.env.DEV || !data.draft) && !data.ogImage
     )
   );
 

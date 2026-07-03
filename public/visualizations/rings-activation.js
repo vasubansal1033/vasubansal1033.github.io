@@ -479,8 +479,10 @@
       drawPlotD3(linearCanvas, linCtx.dpr, predA, state.pts, d3, colors);
       drawPlotD3(reluCanvas, reluCtx.dpr, predB, state.pts, d3, colors);
       drawLossD3(lossSvg, d3, state.lossLin, state.lossRelu, colors);
-      el('[data-acc="linear"]').textContent = accuracy(state.pts, predA).toFixed(1) + "%";
-      el('[data-acc="relu"]').textContent = accuracy(state.pts, predB).toFixed(1) + "%";
+      el('[data-acc="linear"]').textContent =
+        accuracy(state.pts, predA).toFixed(1) + "%";
+      el('[data-acc="relu"]').textContent =
+        accuracy(state.pts, predB).toFixed(1) + "%";
       el('[data-out="epoch"]').textContent = state.epoch;
     }
 
