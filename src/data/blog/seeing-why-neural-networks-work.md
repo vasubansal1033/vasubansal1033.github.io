@@ -1,18 +1,19 @@
 ---
-title: Activations exist for a reason
+title: Seeing why neural networks work
 pubDatetime: 2026-07-03T11:30:00Z
+modDatetime: 2026-07-03T13:00:00Z
 featured: true
 draft: false
 tags:
   - deep-learning
   - neural-networks
   - visualizations
-description: Why nonlinear activations matter — a visual proof using concentric rings and decision boundaries.
+description: Four interactive visual proofs — activations, depth, embeddings, and generalization — that make core neural-network ideas concrete.
 ---
 
-Here's a claim that sounds almost too simple to be interesting: a neural network without any nonlinearity can only ever draw a straight line. It doesn't matter how many layers you give it — stack a hundred of them and you still get a line. Drop in a single nonlinear activation, though, and the whole thing can suddenly bend. I wanted to actually _see_ that happen rather than take it on faith, so this post trains two tiny models side by side and lets you watch the difference.
+Most of the big claims in deep learning sound almost too simple when you first hear them. A network without nonlinearity can only draw a straight line. Stack five linear layers and you still get one line. Embeddings learn similarity from next-token prediction alone. Give a huge model a tiny dataset and it memorizes; give it more data and it generalizes. I wanted to _see_ each of those happen rather than take them on faith, so this page walks through four tiny experiments you can run in the browser.
 
-This is section **S1-1** of a longer series. I'll keep adding sections to this same page as I go.
+Each section (**S1-1** through **S1-4**) is a self-contained claim, setup, and live demo. Start anywhere, but they build on each other in spirit.
 
 ## S1-1 · Activations exist for a reason
 
