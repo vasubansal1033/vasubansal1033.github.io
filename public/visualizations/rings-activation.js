@@ -303,8 +303,8 @@
 
   function drawLossD3(svgSel, d3, lossLin, lossRelu, colors) {
     const W = 620;
-    const H = 150;
-    const m = { t: 10, r: 12, b: 24, l: 40 };
+    const H = 164;
+    const m = { t: 10, r: 12, b: 40, l: 40 };
     svgSel.selectAll("*").remove();
 
     const n = Math.max(lossLin.length, 2);
@@ -329,8 +329,9 @@
 
     svgSel
       .append("text")
-      .attr("x", m.l)
-      .attr("y", H - 4)
+      .attr("x", (m.l + (W - m.r)) / 2)
+      .attr("y", H - 6)
+      .attr("text-anchor", "middle")
       .attr("fill", colors.text)
       .style("font-size", "10px")
       .style("opacity", 0.7)
@@ -448,8 +449,8 @@
     const styleGhost =
       "padding:0.45rem 0.9rem;border-radius:8px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;font-size:0.85rem;";
     const lossMarkup = d3
-      ? `<svg data-svg="loss" viewBox="0 0 620 150" style="width:100%;max-width:620px;height:auto;"></svg>`
-      : `<canvas data-canvas="loss" width="620" height="150" style="width:100%;max-width:620px;height:auto;border-radius:8px;"></canvas>`;
+      ? `<svg data-svg="loss" viewBox="0 0 620 164" style="display:block;margin:0 auto;width:100%;max-width:620px;height:auto;"></svg>`
+      : `<canvas data-canvas="loss" width="620" height="164" style="display:block;margin:0 auto;width:100%;max-width:620px;height:auto;border-radius:8px;"></canvas>`;
 
     container.innerHTML = `
       <div class="rings-viz" style="margin:1.5rem 0;font-family:system-ui,sans-serif;font-size:0.9rem;">
