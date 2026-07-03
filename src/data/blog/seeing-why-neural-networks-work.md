@@ -202,6 +202,24 @@ Picture a student cramming for a quiz with only twenty flashcards. They can memo
 
 A big enough neural network is that student with a photographic memory. On a tiny training set it can memorize every point — including **random labels** — while doing no better than chance on held-out data. More data doesn't just mean more examples to average over; it **narrows the set of solutions** that fit. With enough points, memorizing stops being the easy way to drive training loss down, and the model is pushed toward something that actually generalizes.
 
+### The probabilistic view
+
+Underneath the flashcard analogy is a cleaner statement. Every model is really trying to approximate the unknown true data distribution $P_{\text{true}}(y \mid x)$, and the two failure modes are two different things it can land on instead.
+
+**Memorization** collapses the learned distribution onto the training points — it becomes a set of spikes sitting exactly where the data is:
+
+$$
+P_{\text{model}}(y \mid x) = \sum_{i=1}^{N} \delta(x - x_i)\,\delta(y - y_i)
+$$
+
+That's a lookup table: near-infinite confidence on the examples it has seen, nothing coherent to say about anything else. **Generalization** is the opposite — the model recovers the shape of the distribution rather than the individual points:
+
+$$
+P_{\text{model}}(y \mid x) \approx P_{\text{true}}(y \mid x)
+$$
+
+There's an information-theoretic tension between the two: to extract broad statistical invariants, a model has to _discard_ information about specific instances. Recent work (for example on diffusion models) frames memorization and generalization as nearly mutually exclusive — memorization shows up as a localized drop in representation dimensionality, while generalization keeps a smooth, higher-dimensional geometry across the whole feature space. That's exactly what the demo makes visible: at small _n_ the boundary spikes around individual points; with more data (or mechanisms like early stopping) it relaxes into the smooth ring the true distribution actually has.
+
 ### A concrete example before the demo
 
 Think about the three panels below as the same student, given different amounts of practice:

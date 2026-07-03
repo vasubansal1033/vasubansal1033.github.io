@@ -2,7 +2,7 @@
   const TRAIN_SIZES = [20, 200, 2000];
   const TEST_SIZE = 400;
   const HIDDEN = 64;
-  const MAX_EPOCHS = 500;
+  const DEFAULT_MAX_EPOCHS = 500;
   const STEPS_PER_FRAME = 4;
   const D3_URL = "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 
@@ -348,6 +348,7 @@
     const state = {
       noise: 0.3,
       lr: 0.4,
+      maxEpochs: DEFAULT_MAX_EPOCHS,
       pool: [],
       testPts: [],
       runs: {},
@@ -389,6 +390,10 @@
             <span style="opacity:0.8;">Learning rate: <b data-out="lr">0.40</b></span>
             <input data-ctl="lr" type="range" min="0.05" max="1.0" step="0.05" value="0.4" style="accent-color:var(--accent);" />
           </label>
+          <label style="display:flex;flex-direction:column;gap:0.25rem;min-width:140px;">
+            <span style="opacity:0.8;">Epochs: <b data-out="maxepochs">500</b></span>
+            <input data-ctl="maxepochs" type="range" min="100" max="2000" step="50" value="500" style="accent-color:var(--accent);" />
+          </label>
           <span style="opacity:0.75;font-size:0.85rem;">64-unit ReLU net · ${TEST_SIZE} held-out test points</span>
         </div>
 
@@ -400,7 +405,7 @@
           <button type="button" data-action="train" style="${styleBtn}">▶ Train all three</button>
           <button type="button" data-action="reset" style="${styleGhost}">↺ Reset</button>
           <button type="button" data-action="newdata" style="${styleGhost}">⤺ New data split</button>
-          <span style="opacity:0.8;">epoch <b data-out="epoch">0</b></span>
+          <span style="opacity:0.8;">epoch <b data-out="epoch">0</b> / <b data-out="maxepochs-live">500</b></span>
         </div>
 
         <div style="text-align:center;">
@@ -485,6 +490,7 @@
 
       drawGapChart(gapSvg, d3, state.runs, colors);
       el('[data-out="epoch"]').textContent = state.epoch;
+      el('[data-out="maxepochs-live"]').textContent = state.maxEpochs;
     }
 
     function stop() {
@@ -499,7 +505,7 @@
       if (!document.body.contains(container)) return stop();
 
       for (let k = 0; k < STEPS_PER_FRAME; k++) {
-        if (state.epoch >= MAX_EPOCHS) {
+        if (state.epoch >= state.maxEpochs) {
           stop();
           break;
         }
@@ -522,7 +528,7 @@
 
     function start() {
       if (state.running) return stop();
-      if (state.epoch >= MAX_EPOCHS) initRuns();
+      if (state.epoch >= state.maxEpochs) initRuns();
       state.running = true;
       trainBtn.textContent = "⏸ Pause";
       state.raf = requestAnimationFrame(loop);
@@ -538,6 +544,11 @@
     el('[data-ctl="lr"]').addEventListener("input", e => {
       state.lr = parseFloat(e.target.value);
       el('[data-out="lr"]').textContent = state.lr.toFixed(2);
+    });
+    el('[data-ctl="maxepochs"]').addEventListener("input", e => {
+      state.maxEpochs = parseInt(e.target.value, 10);
+      el('[data-out="maxepochs"]').textContent = state.maxEpochs;
+      el('[data-out="maxepochs-live"]').textContent = state.maxEpochs;
     });
 
     trainBtn.addEventListener("click", start);

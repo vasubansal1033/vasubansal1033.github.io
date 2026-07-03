@@ -1,7 +1,7 @@
 (function () {
   const BOUNDS = 5;
   const GRID = 64;
-  const MAX_EPOCHS = 600;
+  const DEFAULT_MAX_EPOCHS = 600;
   const STEPS_PER_FRAME = 3;
   const D3_URL = "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 
@@ -391,6 +391,7 @@
       noise: 0.25,
       lr: 0.5,
       hidden: 16,
+      maxEpochs: DEFAULT_MAX_EPOCHS,
       pts: [],
       linear: null,
       relu: null,
@@ -430,6 +431,10 @@
             <span style="opacity:0.8;">ReLU hidden units: <b data-out="hidden">16</b></span>
             <input data-ctl="hidden" type="range" min="2" max="32" step="1" value="16" style="accent-color:var(--accent);" />
           </label>
+          <label style="display:flex;flex-direction:column;gap:0.25rem;min-width:140px;">
+            <span style="opacity:0.8;">Epochs: <b data-out="maxepochs">600</b></span>
+            <input data-ctl="maxepochs" type="range" min="100" max="2000" step="50" value="600" style="accent-color:var(--accent);" />
+          </label>
         </div>
 
         <div style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;margin-bottom:0.75rem;">
@@ -449,7 +454,7 @@
           <button type="button" data-action="train" style="${styleBtn}">▶ Train both</button>
           <button type="button" data-action="reset" style="${styleGhost}">↺ Reset weights</button>
           <button type="button" data-action="newdata" style="${styleGhost}">⤺ New data</button>
-          <span style="opacity:0.8;">epoch <b data-out="epoch">0</b></span>
+          <span style="opacity:0.8;">epoch <b data-out="epoch">0</b> / <b data-out="maxepochs-live">600</b></span>
         </div>
 
         <div style="text-align:center;">
@@ -484,6 +489,7 @@
       el('[data-acc="relu"]').textContent =
         accuracy(state.pts, predB).toFixed(1) + "%";
       el('[data-out="epoch"]').textContent = state.epoch;
+      el('[data-out="maxepochs-live"]').textContent = state.maxEpochs;
     }
 
     function resetWeights() {
@@ -511,7 +517,7 @@
       if (!state.running) return;
       if (!document.body.contains(container)) return stop();
       for (let k = 0; k < STEPS_PER_FRAME; k++) {
-        if (state.epoch >= MAX_EPOCHS) {
+        if (state.epoch >= state.maxEpochs) {
           stop();
           break;
         }
@@ -525,7 +531,7 @@
 
     function start() {
       if (state.running) return stop();
-      if (state.epoch >= MAX_EPOCHS) resetWeights();
+      if (state.epoch >= state.maxEpochs) resetWeights();
       state.running = true;
       trainBtn.textContent = "⏸ Pause";
       state.raf = requestAnimationFrame(loop);
@@ -551,6 +557,11 @@
       el('[data-out="hidden"]').textContent = state.hidden;
       stop();
       resetWeights();
+    });
+    el('[data-ctl="maxepochs"]').addEventListener("input", e => {
+      state.maxEpochs = parseInt(e.target.value, 10);
+      el('[data-out="maxepochs"]').textContent = state.maxEpochs;
+      el('[data-out="maxepochs-live"]').textContent = state.maxEpochs;
     });
 
     trainBtn.addEventListener("click", start);

@@ -1,7 +1,7 @@
 (function () {
   const D3_URL = "https://cdn.jsdelivr.net/npm/d3@7/+esm";
   const EMB_DIM = 2;
-  const MAX_STEPS = 4000;
+  const DEFAULT_MAX_STEPS = 4000;
   const STEPS_PER_FRAME = 8;
   const LR = 0.08;
 
@@ -451,6 +451,7 @@
       model: makeModel(),
       losses: [],
       step: 0,
+      maxSteps: DEFAULT_MAX_STEPS,
       running: false,
       raf: null,
       focusToken: "cat",
@@ -518,7 +519,11 @@
         <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:center;margin-top:1rem;">
           <button type="button" data-action="train" style="${styleBtn}">▶ Train</button>
           <button type="button" data-action="reset" style="${styleGhost}">↺ Reset</button>
-          <span style="opacity:0.8;">step <b data-out="step">0</b></span>
+          <label style="display:flex;flex-direction:column;gap:0.2rem;min-width:150px;">
+            <span style="opacity:0.8;font-size:0.82rem;">Steps: <b data-out="maxsteps">4000</b></span>
+            <input data-ctl="maxsteps" type="range" min="500" max="10000" step="500" value="4000" style="accent-color:var(--accent);" />
+          </label>
+          <span style="opacity:0.8;">step <b data-out="step">0</b> / <b data-out="maxsteps-live">4000</b></span>
           <span style="opacity:0.8;">loss <b data-out="loss">—</b></span>
         </div>
       </div>
@@ -551,6 +556,7 @@
       drawLoss(lossSvg, d3, state.losses, colors);
       renderNNList(container, state.model, state.focusToken);
       el('[data-out="step"]').textContent = state.step;
+      el('[data-out="maxsteps-live"]').textContent = state.maxSteps;
       el('[data-out="loss"]').textContent =
         state.losses.length > 0
           ? state.losses[state.losses.length - 1].toFixed(3)
@@ -578,7 +584,7 @@
       if (!document.body.contains(container)) return stop();
 
       for (let k = 0; k < STEPS_PER_FRAME; k++) {
-        if (state.step >= MAX_STEPS) {
+        if (state.step >= state.maxSteps) {
           stop();
           break;
         }
@@ -592,7 +598,7 @@
 
     function start() {
       if (state.running) return stop();
-      if (state.step >= MAX_STEPS) resetModel();
+      if (state.step >= state.maxSteps) resetModel();
       state.running = true;
       trainBtn.textContent = "⏸ Pause";
       state.raf = requestAnimationFrame(loop);
@@ -602,6 +608,11 @@
     el('[data-action="reset"]').addEventListener("click", () => {
       stop();
       resetModel();
+    });
+    el('[data-ctl="maxsteps"]').addEventListener("input", e => {
+      state.maxSteps = parseInt(e.target.value, 10);
+      el('[data-out="maxsteps"]').textContent = state.maxSteps;
+      el('[data-out="maxsteps-live"]').textContent = state.maxSteps;
     });
     const focusSelect = el('[data-ctl="focus"]');
     focusSelect.addEventListener("change", e => {
