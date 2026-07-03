@@ -3,35 +3,40 @@ layout: ../layouts/AboutLayout.astro
 title: "About"
 ---
 
-AstroPaper is a minimal, accessible and SEO-friendly blog theme built with [Astro](https://astro.build/) and [Tailwind CSS](https://tailwindcss.com/).
+<div style="display: flex; justify-content: space-between; gap: 1rem;">
+  <p style="margin: 0;">
+  </br>
+  Welcome to my blog. </br>
+  Hi, I'm <b>Vasu Bansal</b>, a curious software engineer who enjoys learning about new things. </br> In this blog, I will start sharing a bit what I am learning, what I am building, and what I am figuring out along the way.</p>
+  <img alt="Vasu Bansal" src="public/dp.jpg" width="200em" style="border-radius: 8px;" />
+</div>
 
-![Astro Paper](public/astropaper-og.jpg)
+## What you'll find here
 
-AstroPaper provides a solid foundation for blogs, or even portfolios\_ with full markdown support, built-in dark mode, and a clean layout that works out-of-the-box.
+You can expect the blogs to be from a mix of following themes:
 
-The blog posts in this theme also serve as guides, docs or example articles\_ making AstroPaper a flexible starting point for your next content-driven site.
+- System Internals
+- Developer Productivity
+- Backend Engineering
+- System Design
 
-## Features
+## Why this blog exists
 
-AstroPaper comes with a set of useful features that make content publishing easy and effective:
+I started my professional journey in 2021. Since my initial days, I had a habit of maintaining a Google Doc in which I would add specific links of Youtube videos or different blogs on various topics which gave me an introduction to the topic or helped me understand it intuitively.
 
-- SEO-friendly
-- Fast performance
-- Light & dark mode
-- Highly customizable
-- Organizable blog posts
-- Responsive & accessible
-- Static search with [PageFind](https://pagefind.app/)
-- Automatic social image generation
+It grew over time and I later switched to using Notion and instead of book-keeping links it started becoming a knowledge base.
+It's been 5 years now, I have lots of topics ranging from Redis or Kafka Internals, my notes from various online CS courses to general curiousity questions that I might have.
 
-and so much more.
+So, now I am starting this blog to think and write in public, build consistency, and create a useful resource for anyone on a similar journey. And at the same time connecting with like minded folks.
 
-## Show your support
+If a post helps you in intuitively understanding a topic, understanding a system right from basics then this blog is doing its job.
 
-If you like [AstroPaper](https://github.com/satnaing/astro-paper), consider giving it a star ⭐️.
+## Connect
 
-Found a bug 🐛 or have an improvement ✨ in mind? Feel free to open an [issue](https://github.com/satnaing/astro-paper/issues), submit a [pull request](https://github.com/satnaing/astro-paper/pulls) or start a [discussion](https://github.com/satnaing/astro-paper/discussions).
+Want to say hello? Reach out using any of these placeholder links:
 
-If you find this theme helpful, you can also [sponsor me on GitHub](https://github.com/sponsors/satnaing) or [buy me a coffee](https://buymeacoffee.com/satnaing) to show your support — every penny counts.
+- Email: `vasubansal1998@gmail.com`
+- GitHub: [my-github](https://github.com/vasubansal1033?tab=repositories)
+- LinkedIn: [my-linkedin](https://www.linkedin.com/in/vasub-iitk/)
 
-Kyay zuu! 🙏🏼
+Thank you for stopping by!
