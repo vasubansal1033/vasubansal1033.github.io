@@ -1,7 +1,7 @@
 ---
 title: Seeing why neural networks work
 pubDatetime: 2026-07-03T11:30:00Z
-modDatetime: 2026-07-03T14:15:00Z
+modDatetime: 2026-07-03T15:40:00Z
 featured: true
 draft: false
 tags:
@@ -14,7 +14,7 @@ description: Four interactive visual proofs — activations, depth, embeddings, 
 
 Most of the big claims in deep learning sound almost too simple when you first hear them. A network without nonlinearity can only draw a straight line. Stack five linear layers and you still get one line. Embeddings learn similarity from next-token prediction alone. Give a huge model a tiny dataset and it memorizes; give it more data and it generalizes. I wanted to _see_ each of those happen rather than take them on faith, so this page walks through four tiny experiments you can run in the browser.
 
-Each section (**S1-1** through **S1-4**) is a self-contained claim, setup, and live demo. Start anywhere, but they build on each other in spirit.
+Each section (**S1-1** through **S1-5**) is a self-contained claim, setup, and live demo. Start anywhere, but they build on each other in spirit.
 
 ## S1-1 · Activations exist for a reason
 
@@ -56,11 +56,39 @@ An activation is really just a "bend" you apply to a neuron's output, and differ
 
 That XOR example above isn't one I picked at random. In 1969, Minsky and Papert proved a single-layer perceptron can't represent XOR at all, and the disappointment that followed helped kick off the first **AI winter** — years when funding and interest in neural nets largely dried up. The way out turned out to be stacking layers _with_ a nonlinearity between them and training them with backpropagation (Rumelhart, Hinton & Williams, 1986).
 
-**ReLU** — just `max(0, z)` — became the default for a few down-to-earth reasons. On its active side the slope is exactly 1, so it doesn't shrink gradients the way sigmoid does. It's trivially cheap to compute. And it naturally switches off a lot of neurons (anything negative becomes zero), which keeps things sparse. Its one real annoyance is the "dying ReLU" problem, where a neuron gets stuck on the flat side and stops learning — which is why softer variants like **Leaky ReLU** and the smooth **GELU** (the one inside most modern Transformers) exist. But the headline never changes, and the plots above make it concrete: no nonlinearity, no bend — and without a bend, that ring never gets wrapped.
+The longer arc — the one that runs from wartime engineering all the way to `max(0, z)` — is genuinely one of the best stories in science, and it's worth telling properly.
+
+#### The longer story: from anti-aircraft guns to ImageNet
+
+Here's the whole arc on one timeline — press **Play**, or click any milestone to read what happened.
+
+<div class="viz-dl-history" data-viz="dl-history"></div>
+<script src="/visualizations/dl-history-timeline.js"></script>
+
+**The 1940s — feedback, logic, and the first artificial neuron.** Oddly enough, the thread starts with anti-aircraft guns. During World War II, Norbert Wiener worked on the problem of automatically aiming artillery at planes that were actively dodging — you fire not where the target _is_ but where it _will be_, and you correct continuously from error. Generalizing that idea of self-correcting **feedback** gave birth to **cybernetics**: the study of control and communication in animals and machines. In the same years, Warren McCulloch and Walter Pitts (1943) showed that a network of idealized "all-or-nothing" neurons — simple threshold switches that fire once their inputs cross a line — could in principle compute any logical proposition. That's the founding move of the whole field: a _neuron as a switch_, and thought as computation over switches.
+
+**The 1950s–60s — the perceptron and its ceiling.** Frank Rosenblatt turned that static switch into something that _learns_. His **perceptron** (1958) attached adjustable **weights** to each input and a rule for nudging those weights whenever the machine guessed wrong — so experience literally reshaped the neuron. It caused a genuine sensation; there was talk of machines that would soon walk, talk, and see. The linear model you trained at the top of this page is, essentially, a modern perceptron. But in 1969 Marvin Minsky and Seymour Papert published a careful mathematical takedown: a single-layer perceptron simply cannot represent **XOR** (the exact wall you can watch the linear model hit above), and more generally can't handle problems that aren't linearly separable. The critique was correct, widely read, and devastating — funding evaporated and the first **AI winter** set in.
+
+**The 1980s — backprop thaws the winter, sigmoid warms it up.** The revival came from a small, stubborn group sometimes half-jokingly called the "deep learning mafia" — Geoffrey Hinton, Yoshua Bengio, Yann LeCun and collaborators. The key unlock was **backpropagation** (popularized by Rumelhart, Hinton & Williams, 1986): a way to send the error signal backward through _multiple_ layers and update every weight, so networks could finally be more than one layer deep. To do that they needed a smooth, differentiable activation, and the **sigmoid** S-curve fit the bill. Multi-layer nets could now, in principle, bend space and solve XOR — exactly what the ReLU model demonstrates above.
+
+**The 1990s — the vanishing gradient, and the reign of SVMs.** There was a catch that took years to fully diagnose. Sigmoid is _too polite_: far from zero its curve goes almost flat, so its slope is nearly zero out there. Stack many such layers and backprop multiplies all those tiny slopes together, so the gradient reaching the early layers **vanishes** to almost nothing — those layers barely learn. Deep networks were theoretically possible but practically untrainable. Into that vacuum stepped Vladimir Vapnik's **Support Vector Machines**. SVMs were everything neural nets weren't at the time: mathematically clean, backed by solid theory, and **convex** — one global optimum, guaranteed to be found. For much of the decade the field's respectable choice was the SVM, and neural networks were quietly dismissed by many as unprincipled "alchemy."
+
+**2011–2012 — ReLU, and the dam breaks.** In 2011, Xavier Glorot, Antoine Bordes, and Yoshua Bengio pinned the blame squarely on the activation function and reached for something almost embarrassingly simple: the **Rectified Linear Unit**, `max(0, z)`. Zero for negative inputs, and a straight 45° line for positive ones. Because its slope on the active side is exactly 1, gradients pass through deep stacks without shrinking — the vanishing-gradient problem largely evaporates. Then came the exclamation point: in 2012, **AlexNet** (Krizhevsky, Sutskever & Hinton) paired ReLU with GPU training and cut the **ImageNet** error rate so dramatically that it ended the paradigm debate overnight. Within a couple of years, essentially the entire field had switched to deep nets.
+
+You can see exactly why the activation was the bottleneck. The left panel plots each function; the middle plots its **slope** — the quantity backprop multiplies together layer after layer. The right panel takes each function's best-case slope and raises it to the power of the network depth. Sigmoid's best case is only 0.25, so even optimistically the gradient shrinks fourfold per layer and collapses toward zero within a handful of layers; ReLU's is 1, so it holds flat no matter how deep you go. Drag the **depth** slider and watch sigmoid fall off a cliff while ReLU stays put.
+
+<div class="viz-activation-gradient" data-viz="activation-gradient"></div>
+<script src="/visualizations/activation-gradient.js"></script>
+
+**The irony at the end.** After all that — decades of theory, winters, and reinvention — the component at the heart of GPT-scale models is a hard "off" below zero and a plain linear "on" above it. We came almost full circle to the McCulloch–Pitts switch of the 1940s; the revolution was less a new idea than an old one finally allowed to scale. The [video linked below](#further-watching) tells this arc beautifully.
+
+**ReLU** became the default for a few down-to-earth reasons. On its active side the slope is exactly 1, so it doesn't shrink gradients the way sigmoid does. It's trivially cheap to compute. And it naturally switches off a lot of neurons (anything negative becomes zero), which keeps things sparse. Its one real annoyance is the "dying ReLU" problem, where a neuron gets stuck on the flat side and stops learning — which is why softer variants like **Leaky ReLU** and the smooth **GELU** (the one inside most modern Transformers) exist. But the headline never changes, and the plots above make it concrete: no nonlinearity, no bend — and without a bend, that ring never gets wrapped.
 
 #### Further watching
 
-If you'd like a more visual, intuition-first take on this, I really enjoyed [Hidden Symmetry: Why Deep Learning is Possible](https://www.youtube.com/watch?v=2qXF8JHcU5E). A few things worth holding onto while you watch:
+For the full history — from 1940s cybernetics through the vanishing-gradient years to ReLU's win at ImageNet — [From Anti-Aircraft Guns to ImageNet: How Activation Functions Have Shaped Deep Learning](https://www.youtube.com/watch?v=zcWxqTCJQTo) is a wonderfully told version of the story above.
+
+If you'd like a more visual, intuition-first take on _why_ these networks train at all, I also really enjoyed [Hidden Symmetry: Why Deep Learning is Possible](https://www.youtube.com/watch?v=2qXF8JHcU5E). A few things worth holding onto while you watch:
 
 - Nonlinearity is the whole game. Stacking linear layers only ever gets you another straight line; the activation is what lets a network bend space and carve out curved boundaries.
 - The bends add up. Each hidden unit contributes one simple fold, and stacking enough of them lets a network approximate almost any shape.
@@ -264,3 +292,65 @@ Around the same time, the field was rediscovering an older idea: **more data is 
 There's a wrinkle worth knowing. Classical theory predicted that once a model is complex enough to interpolate the training set, test error should get _worse_. In practice, people sometimes see **double descent** — performance dips near the interpolation threshold, then improves again as capacity grows further. The rings demo doesn't show that second climb (we hold architecture fixed), but it's a reminder that "bigger model = worse generalization" is too simple. The through-line that _does_ hold: **without enough data, a capable model will use its capacity to memorize; with enough data, memorization stops being the path of least resistance.**
 
 That's why practitioners reach for more data before more parameters, and why the generalization gap in the chart above is one of the most honest diagnostics you have: it tells you, in one number, whether your model learned the ring or just the flashcards.
+
+## S1-5 · The hidden symmetries that make training possible
+
+### The claim
+
+Here's something that should feel impossible. Training a neural network means minimizing a **non-convex** loss — a landscape with, in principle, an astronomical number of local minima and saddle points. Classical optimization says you should get hopelessly stuck. And yet gradient descent, the simplest hill-descending algorithm we have, finds excellent solutions almost every time. Why?
+
+A big part of the answer is **symmetry**. A dense layer's neurons have no inherent order, and for ReLU-style activations the weights have a hidden scaling freedom. Those symmetries mean the "good" solutions aren't rare needles in a haystack — they come in enormous families of exact copies, and there are so many equivalent paths downhill that getting permanently stuck becomes very unlikely.
+
+Two symmetries do most of the work:
+
+- **Permutation symmetry.** Relabel the hidden neurons — swap unit 3 with unit 7 everywhere they appear — and the network computes the _exact same function_. For a layer of $h$ neurons there are $h!$ such relabelings, so every solution is secretly $h!$ identical points in weight space.
+- **Scale symmetry.** ReLU is positively homogeneous: $\text{ReLU}(cz) = c\,\text{ReLU}(z)$ for any $c > 0$. Multiply a unit's incoming weights by $c$ and its outgoing weight by $1/c$ and the function is untouched — a whole _continuous manifold_ of equivalent solutions.
+
+### The math, briefly
+
+Take one hidden unit $j$ with incoming weights $\mathbf{w}^{\text{in}}_j$, bias $b_j$, and outgoing weight $w^{\text{out}}_j$. Its contribution to the output is
+
+$$
+w^{\text{out}}_j \,\cdot\, \text{ReLU}\big(\mathbf{w}^{\text{in}}_j \cdot \mathbf{x} + b_j\big)
+$$
+
+**Permutation:** the output is a _sum_ over units, and addition doesn't care about order, so any reordering of the units leaves the sum identical.
+
+**Scaling:** replace $\mathbf{w}^{\text{in}}_j \to c\,\mathbf{w}^{\text{in}}_j$, $b_j \to c\,b_j$, and $w^{\text{out}}_j \to w^{\text{out}}_j / c$. Because ReLU pulls the positive constant straight out,
+
+$$
+\frac{w^{\text{out}}_j}{c}\,\text{ReLU}\big(c\,(\mathbf{w}^{\text{in}}_j \cdot \mathbf{x} + b_j)\big) = \frac{w^{\text{out}}_j}{c}\,\cdot\, c\,\text{ReLU}\big(\mathbf{w}^{\text{in}}_j \cdot \mathbf{x} + b_j\big) = w^{\text{out}}_j\,\text{ReLU}\big(\mathbf{w}^{\text{in}}_j \cdot \mathbf{x} + b_j\big)
+$$
+
+The $c$ cancels exactly. Same function, different weights.
+
+### See the landscape itself
+
+This is the picture the [video](https://www.youtube.com/watch?v=2qXF8JHcU5E) leans on, so it's worth drawing in 3D. Take the simplest case: a hidden layer of **two** neurons, and summarize each one by a single number — $\theta_1$ for the first neuron, $\theta_2$ for the second. The height of the surface below is the training loss. Because the network only cares about the _set_ of neurons and not their order, the loss obeys $L(\theta_1, \theta_2) = L(\theta_2, \theta_1)$ — it is perfectly symmetric across the dashed diagonal.
+
+That single symmetry is why there are **two** valleys instead of one, and they are exact mirror images. Press **Swap the two neurons** and watch the ball climb over the ridge and settle into the twin valley at _identical_ depth — same loss, same network, just neuron A and neuron B trading name tags. Drag to orbit the surface; the two wells are genuinely the same shape.
+
+<div class="viz-permutation-landscape" data-viz="permutation-landscape"></div>
+<script src="/visualizations/permutation-landscape.js"></script>
+
+With only two neurons there are $2! = 2$ copies. Add a third and there are $3! = 6$; a layer of ten gives $10! \approx 3.6$ million valleys, all identical, scattered across weight space. We can only draw two axes, so we draw the two — but every real network's landscape is tiled with these reflections. Far from being a hostile maze of distinct local minima, most of those "minima" are the _same_ minimum seen from a different seat, and that redundancy is exactly what makes the non-convex landscape so easy to descend.
+
+### Watch it happen
+
+I train a small ReLU network on the rings until it separates them, then let you apply these symmetries by hand. The key readout is **function drift** — the largest change in the network's output over the whole plane. If a symmetry is real, that number stays at machine-zero no matter what you do.
+
+- Hit **Permute neuron order**: the coloured neuron chips physically shuffle (colour tracks each unit's identity), but the decision boundary and accuracy don't budge. You've just hopped to a different but _identical_ minimum — one of the $h!$ copies from the landscape above.
+- Click a neuron and drag the **scale slider**: its incoming and outgoing weights change in front of you, yet the boundary and drift stay frozen. You're sliding along the continuous scale manifold.
+
+<div class="viz-weight-symmetry" data-viz="weight-symmetry"></div>
+<script src="/visualizations/weight-symmetry.js"></script>
+
+Turn up the **hidden units** and watch the "permutation copies" counter explode — $6! = 720$, but $10! = 3{,}628{,}800$. Every one of those is the same network wearing a different name tag.
+
+### A bit of history, and why this matters
+
+For a long time the non-convexity of neural-network losses was treated as a fatal objection. Convex optimization gives you a single global minimum and a guarantee you'll reach it; neural nets throw that away, so why should training ever work? The reframing — nicely laid out in [Hidden Symmetry: Why Deep Learning is Possible](https://www.youtube.com/watch?v=2qXF8JHcU5E) — is that the landscape's structure is not adversarial but **highly symmetric**, and symmetry is a friend to optimization.
+
+The scaling invariance was noticed early: Neyshabur et al. (2015) pointed out that ordinary weight-decay behaves strangely under ReLU rescaling and proposed **Path-SGD**, an optimizer designed to respect the symmetry. The permutation side turned out to have a striking practical consequence. Entezari et al. (2021) conjectured that most SGD solutions are the _same_ solution once you account for permutations, and **Git Re-Basin** (Ainsworth et al., 2022) showed you can often permute one trained network to line up with another so that the straight line between them stays low-loss — evidence that those $h!$ copies really do tile the landscape. This is also why naively averaging two independently trained networks usually fails: they sit in different permutation copies, and you have to re-align them first.
+
+The deeper point ties the whole page together. Symmetry is what lets over-parameterization help instead of hurt (S1-4): extra neurons don't just add capacity, they add more equivalent routes to a good solution. And it's a reminder that a trained network's specific weights are far less meaningful than the _function_ they compute — most of the numbers you'd read off are just an arbitrary choice of name tag and scale.
