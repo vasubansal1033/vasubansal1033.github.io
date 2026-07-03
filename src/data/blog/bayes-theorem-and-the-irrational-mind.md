@@ -2,7 +2,7 @@
 title: Bayes' theorem and the irrational mind
 pubDatetime: 2026-07-03T17:00:00Z
 featured: true
-draft: true
+draft: false
 tags:
   - probability
   - bayes
