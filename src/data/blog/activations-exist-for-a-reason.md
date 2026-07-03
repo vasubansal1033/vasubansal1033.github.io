@@ -42,7 +42,7 @@ Same loss (binary cross-entropy), same optimizer (full-batch gradient descent). 
 
 ### Proof
 
-Hit **Train both** below and watch it happen live. Both models train on the exact same data with the same optimizer — the only difference is model B's ReLU hidden layer. Each panel shows the decision region (shaded by confidence), the boundary (the thick line), the data points, and the live training accuracy. The chart underneath tracks each model's training loss.
+Hit **Train both** below and watch it happen live. Both models train on the exact same data with the same optimizer — the only difference is model B's ReLU hidden layer. Each panel renders the decision field as smooth confidence contours, with the thick line marking the boundary (where the model is 50/50), the data points on top, and the live training accuracy. The chart underneath tracks each model's training loss.
 
 Play with the knobs: change the **dataset** (rings, moons, spiral, XOR), add **noise**, tweak the **learning rate**, or resize the **ReLU hidden layer**. Every change reshuffles the data and resets training.
 
