@@ -450,9 +450,12 @@
       drawPlotD3(canvasB, ctxB.dpr, predB, state.pts, d3, colors);
       drawPlotD3(canvasC, ctxC.dpr, predC, state.pts, d3, colors);
 
-      el('[data-acc="a"]').textContent = accuracy(state.pts, predA).toFixed(1) + "%";
-      el('[data-acc="b"]').textContent = accuracy(state.pts, predB).toFixed(1) + "%";
-      el('[data-acc="c"]').textContent = accuracy(state.pts, predC).toFixed(1) + "%";
+      el('[data-acc="a"]').textContent =
+        accuracy(state.pts, predA).toFixed(1) + "%";
+      el('[data-acc="b"]').textContent =
+        accuracy(state.pts, predB).toFixed(1) + "%";
+      el('[data-acc="c"]').textContent =
+        accuracy(state.pts, predC).toFixed(1) + "%";
       el('[data-out="epoch"]').textContent = state.epoch;
       updateCollapse();
     }

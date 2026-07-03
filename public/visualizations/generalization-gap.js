@@ -171,10 +171,7 @@
     svgSel.selectAll("*").remove();
 
     const n = Math.max(trainLoss.length, 2);
-    const maxL = Math.max(
-      0.02,
-      d3.max([...trainLoss, ...testLoss]) || 0.02
-    );
+    const maxL = Math.max(0.02, d3.max([...trainLoss, ...testLoss]) || 0.02);
 
     const x = d3.scaleLinear([0, Math.max(n - 1, 1)], [m.l, W - m.r]);
     const y = d3.scaleLinear([0, maxL * 1.05], [H - m.b, m.t]);
@@ -509,9 +506,7 @@
 
         for (const size of TRAIN_SIZES) {
           const run = state.runs[size];
-          run.trainLoss.push(
-            stepRelu(run.model, run.trainPts, state.lr)
-          );
+          run.trainLoss.push(stepRelu(run.model, run.trainPts, state.lr));
           const trainM = evalMetrics(run.model, run.trainPts);
           const testM = evalMetrics(run.model, state.testPts);
           run.testLoss.push(testM.loss);
@@ -580,9 +575,7 @@
   }
 
   function initAll() {
-    document
-      .querySelectorAll(".viz-generalization-gap")
-      .forEach(mount);
+    document.querySelectorAll(".viz-generalization-gap").forEach(mount);
   }
 
   initAll();

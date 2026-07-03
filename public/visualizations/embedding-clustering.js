@@ -522,7 +522,9 @@
 
   function initAll() {
     document
-      .querySelectorAll('.viz-embedding-clustering[data-viz="embedding-clustering"]')
+      .querySelectorAll(
+        '.viz-embedding-clustering[data-viz="embedding-clustering"]'
+      )
       .forEach(mount);
   }
 

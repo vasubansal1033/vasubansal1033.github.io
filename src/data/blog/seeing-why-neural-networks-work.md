@@ -64,6 +64,7 @@ If you'd like a more visual, intuition-first take on this, I really enjoyed [Hid
 - Nonlinearity is the whole game. Stacking linear layers only ever gets you another straight line; the activation is what lets a network bend space and carve out curved boundaries.
 - The bends add up. Each hidden unit contributes one simple fold, and stacking enough of them lets a network approximate almost any shape.
 - Shape and slope are two separate jobs. An activation has to be nonlinear (so the network can curve) _and_ keep a healthy gradient across depth (so it can actually train) — which is precisely why ReLU pushed sigmoid and tanh aside.
+
 ## S1-2 · Depth without nonlinearity is a lie
 
 ### The claim
@@ -100,6 +101,7 @@ Tweak **noise** or the **learning rate** if you want; either one reshuffles the 
 <script src="/visualizations/linear-collapse.js"></script>
 
 The takeaway is blunt: depth alone doesn't buy expressiveness. Nonlinearity between layers is what turns a stack of matrices into something that can bend. Without it, you're always drawing a line — no matter how tall the stack gets.
+
 ## S1-3 · Embeddings learn similarity from nothing but next-token
 
 ### The claim
@@ -134,6 +136,7 @@ The loss chart underneath the plot is there mostly as a sanity check: if it's st
 <script src="/visualizations/embedding-clustering.js"></script>
 
 This is the distributional hypothesis made literal. Tokens that play the same role in the toy grammar get pulled into the same region of space because the model keeps asking them to predict the same kinds of continuations. Nobody hand-labelled "animal" — the category **emerged** from next-token prediction alone. Scale that idea up to billions of tokens and billions of parameters, and you get the semantic geometry that powers modern language models.
+
 ## S1-4 · Memorization vs generalization, and data closes the gap
 
 ### The claim
