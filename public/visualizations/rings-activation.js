@@ -241,11 +241,27 @@
     return { ctx, dpr };
   }
 
+  function clipRoundedRect(ctx, size, radius, inset) {
+    const x = inset;
+    const w = size - 2 * inset;
+    ctx.beginPath();
+    if (ctx.roundRect) {
+      ctx.roundRect(x, x, w, w, radius);
+    } else {
+      ctx.rect(x, x, w, w);
+    }
+    ctx.clip();
+  }
+
   function drawPlotD3(canvas, dpr, predict, pts, d3, colors) {
     const size = 300;
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, size, size);
+
+    // keep everything (field, boundary, points) inside the rounded frame
+    ctx.save();
+    clipRoundedRect(ctx, size, 10, 1.5);
 
     const color = d3
       .scaleLinear()
@@ -299,6 +315,8 @@
       ctx.strokeStyle = colors.pointStroke;
       ctx.stroke();
     }
+
+    ctx.restore();
   }
 
   function drawLossD3(svgSel, d3, lossLin, lossRelu, colors) {
@@ -363,6 +381,8 @@
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, size, size);
+    ctx.save();
+    clipRoundedRect(ctx, size, 10, 1.5);
     ctx.fillStyle = colors.panelBg;
     ctx.fillRect(0, 0, size, size);
 
@@ -392,6 +412,7 @@
       ctx.lineWidth = 1;
       ctx.stroke();
     }
+    ctx.restore();
   }
 
   function drawLossFallback(canvas, lossLin, lossRelu, colors) {
