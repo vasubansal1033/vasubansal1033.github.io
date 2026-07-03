@@ -75,8 +75,13 @@ Hardcoded public assets in layouts use `import.meta.env.BASE_URL` (favicon, togg
 
 Do all of this on a feature branch with small atomic commits (Conventional Commits), staging by explicit path so unrelated working-tree changes aren't swept in. One commit per logical unit (filter logic, drafts, each widget, each post).
 
+Always run `npm run format` (Prettier) before staging/committing so formatting stays consistent, then stage the formatted files.
+
+When adding npm dependencies, also run `pnpm install` and commit `pnpm-lock.yaml` — CI uses `pnpm install` with a frozen lockfile (see `.github/workflows/ci.yml`).
+
 ## Verify before committing
 
+- `npm run format` — Prettier; run this first, before staging and committing.
 - `npm run build` — runs `astro check` + build (use `npm`, not `pnpm`, in this environment).
 - `npm run lint` — ESLint.
 - `node --check public/visualizations/<name>.js` — quick syntax check for the widget.

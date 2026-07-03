@@ -89,6 +89,11 @@
     pre {
       @apply focus-visible:border-transparent focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-dashed;
     }
+
+    /* KaTeX block equations inherit the theme text color */
+    .katex-display {
+      @apply overflow-x-auto overflow-y-hidden py-1 text-foreground;
+    }
   }
 
   /* ===== Code Blocks & Syntax Highlighting ===== */
