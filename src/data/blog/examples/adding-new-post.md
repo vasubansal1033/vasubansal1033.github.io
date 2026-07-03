@@ -112,7 +112,7 @@ tags:
   - some
   - example
   - tags
-ogImage: ../../assets/images/example.png # src/assets/images/example.png
+ogImage: ../../../assets/images/forrest-gump-quote.png # src/assets/images/forrest-gump-quote.png
 # ogImage: "https://example.org/remote-image.png" # remote URL
 description: This is the example description of the example post.
 canonicalURL: https://example.org/my-article-was-already-posted-here
@@ -206,7 +206,7 @@ Example: Suppose you want to display `example.jpg` whose path is `/src/assets/im
 
 <!-- OR -->
 
-![something](../../assets/images/example.jpg)
+![something](../../../assets/images/forrest-gump-quote.png)
 
 <!-- Using img tag or Image component won't work ❌ -->
 <img src="@/assets/images/example.jpg" alt="something">
