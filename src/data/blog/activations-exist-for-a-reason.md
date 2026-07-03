@@ -54,3 +54,9 @@ The linear model draws a straight boundary and flattens out near a coin-flip —
 Only the activation changed.
 
 Try switching the dataset to **XOR** — the historical example that stalled neural-net research for years. Model A sits near 50% while model B solves it cleanly.
+
+### A bit of history, and why ReLU won
+
+An activation is just a "bend" you apply to a neuron's output, and different bends behave differently. The classic **sigmoid** and **tanh** are smooth S-curves that squash values into a fixed range, but they *saturate*: for large inputs their slope flattens toward zero, which makes gradients vanish in deep networks and training crawl. In fact, back in 1969 Minsky and Papert showed a single-layer perceptron provably cannot solve XOR — a result that helped trigger the first **AI winter**, a long stretch where funding and interest in neural networks dried up. The escape came from stacking layers *with* a nonlinearity between them and training them via backpropagation (Rumelhart, Hinton & Williams, 1986).
+
+**ReLU** (`max(0, z)`) then became the default for deep learning for a few simple reasons: on its active side its slope is exactly 1, so it doesn't shrink gradients the way sigmoid does; it's dirt cheap to compute; and it produces sparse activations (many neurons output exactly 0). Its one quirk is the "dying ReLU" problem — a neuron stuck on the flat negative side stops learning — which variants like **Leaky ReLU** and the smooth **GELU** (the activation inside modern Transformers) were designed to soften. But the core lesson is the same one the plots above make visible: without some nonlinearity, there is no bend, and without a bend, no ring ever gets wrapped.
