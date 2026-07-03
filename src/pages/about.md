@@ -8,7 +8,7 @@ title: "About"
   </br>
   Welcome to my blog. </br>
   Hi, I'm <b>Vasu Bansal</b>, a curious software engineer who enjoys learning about new things. </br> In this blog, I will start sharing a bit what I am learning, what I am building, and what I am figuring out along the way.</p>
-  <img alt="Vasu Bansal" src="/blog/dp.jpg" width="200em" style="border-radius: 8px;" />
+  <img alt="Vasu Bansal" src="/dp.jpg" width="200em" style="border-radius: 8px;" />
 </div>
 
 ## What you'll find here

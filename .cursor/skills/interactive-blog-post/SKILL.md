@@ -60,6 +60,17 @@ For decision-boundary / scalar-field plots, `d3-contour` (`d3.contours().smooth(
 
 Reference implementation: [public/visualizations/rings-activation.js](../../../public/visualizations/rings-activation.js).
 
+## GitHub Pages base path
+
+`SITE.website` in [src/config.ts](../../../src/config.ts) drives Astro `site` + `base` in [astro.config.ts](../../../astro.config.ts). **Must match where Pages actually serves the site.**
+
+- User site (`username.github.io` repo) → `https://username.github.io/` → assets at `/_astro/`
+- Project site (`blog` repo) → `https://username.github.io/blog/` → assets at `/blog/_astro/`
+
+Mismatch (HTML says `/blog/_astro/…` but deploy at root) → JS/CSS 404, MIME `text/html`, broken styling.
+
+Hardcoded public assets in layouts use `import.meta.env.BASE_URL` (favicon, toggle-theme, sitemap). Markdown embeds use root paths like `/visualizations/…` — correct when `base` is unset.
+
 ## Git workflow
 
 Do all of this on a feature branch with small atomic commits (Conventional Commits), staging by explicit path so unrelated working-tree changes aren't swept in. One commit per logical unit (filter logic, drafts, each widget, each post).

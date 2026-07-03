@@ -1,5 +1,5 @@
 export const SITE = {
-  website: "https://vasubansal1033.github.io/blog/", // replace this with your deployed domain
+  website: "https://vasubansal1033.github.io/", // GitHub Pages user site (deployed at repo root)
   author: "Vasu Bansal",
   profile: "https://vasubansal1033.github.io/",
   desc: "Blog about my learning journey and experiences.",
