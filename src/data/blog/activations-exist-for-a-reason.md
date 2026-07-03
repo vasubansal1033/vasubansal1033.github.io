@@ -60,3 +60,11 @@ Try switching the dataset to **XOR** — the historical example that stalled neu
 An activation is just a "bend" you apply to a neuron's output, and different bends behave differently. The classic **sigmoid** and **tanh** are smooth S-curves that squash values into a fixed range, but they *saturate*: for large inputs their slope flattens toward zero, which makes gradients vanish in deep networks and training crawl. In fact, back in 1969 Minsky and Papert showed a single-layer perceptron provably cannot solve XOR — a result that helped trigger the first **AI winter**, a long stretch where funding and interest in neural networks dried up. The escape came from stacking layers *with* a nonlinearity between them and training them via backpropagation (Rumelhart, Hinton & Williams, 1986).
 
 **ReLU** (`max(0, z)`) then became the default for deep learning for a few simple reasons: on its active side its slope is exactly 1, so it doesn't shrink gradients the way sigmoid does; it's dirt cheap to compute; and it produces sparse activations (many neurons output exactly 0). Its one quirk is the "dying ReLU" problem — a neuron stuck on the flat negative side stops learning — which variants like **Leaky ReLU** and the smooth **GELU** (the activation inside modern Transformers) were designed to soften. But the core lesson is the same one the plots above make visible: without some nonlinearity, there is no bend, and without a bend, no ring ever gets wrapped.
+
+#### Further watching
+
+For a visual, intuition-first take on the same ideas, this video is worth a watch: [Neural networks and activation functions (YouTube)](https://www.youtube.com/watch?v=2qXF8JHcU5E). A few things worth carrying away as you watch:
+
+- **Nonlinearity is the whole point.** Stacking linear layers only ever gives you another straight line — the activation is what lets a network bend space and carve curved boundaries.
+- **The bends compose.** Each hidden unit contributes one simple "fold," and summing many of them is what lets a network approximate almost any shape.
+- **Shape and slope are different jobs.** An activation must be nonlinear (so the network can curve) *and* keep a healthy gradient across depth (so it can actually train) — which is exactly why ReLU displaced the saturating sigmoid/tanh.
