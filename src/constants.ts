@@ -75,3 +75,18 @@ export const SHARE_LINKS: Social[] = [
     icon: IconMail,
   },
 ] as const;
+
+export const GISCUS = {
+  repo: "vasubansal1033/vasubansal1033.github.io",
+  repoId: "R_kgDOQFIHNw",
+  category: "Announcements",
+  categoryId: "DIC_kwDOQFIHN84DAeLz",
+  mapping: "pathname",
+  strict: "0",
+  reactionsEnabled: "1",
+  emitMetadata: "0",
+  inputPosition: "top",
+  theme: "noborder_light",
+  lang: "en",
+  loading: "lazy",
+} as const;

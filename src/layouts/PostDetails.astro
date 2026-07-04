@@ -14,6 +14,7 @@ import { slugifyStr } from "@/utils/slugify";
 import IconChevronLeft from "@/assets/icons/IconChevronLeft.svg";
 import IconChevronRight from "@/assets/icons/IconChevronRight.svg";
 import { SITE } from "@/config";
+import { GISCUS } from "@/constants";
 
 export interface Props {
   post: CollectionEntry<"blog">;
@@ -128,6 +129,27 @@ const nextPost =
     <BackToTopButton />
 
     <ShareLinks />
+
+    <div class="giscus mt-8" data-pagefind-ignore></div>
+
+    <script
+      is:inline
+      data-astro-rerun
+      src="https://giscus.app/client.js"
+      data-repo={GISCUS.repo}
+      data-repo-id={GISCUS.repoId}
+      data-category={GISCUS.category}
+      data-category-id={GISCUS.categoryId}
+      data-mapping={GISCUS.mapping}
+      data-strict={GISCUS.strict}
+      data-reactions-enabled={GISCUS.reactionsEnabled}
+      data-emit-metadata={GISCUS.emitMetadata}
+      data-input-position={GISCUS.inputPosition}
+      data-theme={GISCUS.theme}
+      data-lang={GISCUS.lang}
+      data-loading={GISCUS.loading}
+      crossorigin="anonymous"
+      async></script>
 
     <hr class="my-6 border-dashed" />
 

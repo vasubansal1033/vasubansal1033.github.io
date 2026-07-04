@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro check && astro build && pagefind --site dist && cp -r dist/pagefind public/",
+    "build:analyze": "pnpm run build && pnpm run analyze",
+    "analyze": "echo \"\\nTotal:\" && du -sh dist && echo \"\\nTop-level breakdown:\" && du -h -d 1 dist | sort -hr && echo \"\\nLargest entries:\" && du -ah dist | sort -hr | head -20",
     "preview": "astro preview",
     "sync": "astro sync",
     "astro": "astro",
