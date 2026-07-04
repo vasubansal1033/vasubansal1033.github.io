@@ -86,7 +86,7 @@ export const GISCUS = {
   reactionsEnabled: "1",
   emitMetadata: "0",
   inputPosition: "top",
-  theme: "dark_high_contrast",
+  theme: "noborder_light",
   lang: "en",
   loading: "lazy",
 } as const;
