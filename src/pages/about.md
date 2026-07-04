@@ -6,7 +6,6 @@ title: "About"
 <div style="display: flex; justify-content: space-between; gap: 1rem;">
   <p style="margin: 0;">
   </br>
-  Welcome to my blog. </br>
   Hi, I'm <b>Vasu Bansal</b>, a curious (software) engineer who enjoys learning about new things. </br> In this blog, I will start sharing a bit what I am learning, building, and what I am figuring out along the way.</p>
   
   <img alt="Vasu Bansal" src="/dp.jpg" width="200em" style="border-radius: 8px;" />
@@ -14,7 +13,7 @@ title: "About"
 
 Being a tech-geek, I also run a homelab (whenever I get time). The hardware consists of a Synology NAS 923+, a RaspberryPi 5 along with 2 HP T630s, which I got for cheap. Overall setup cost should be around 1 lakh INR.
 <img alt="My Homelab" src="/homelab.jpg" width="300em" style="border-radius: 8px;" />
-I use it primarily for selfhosting stuff like Immich(my mobile photo backup solution), Adguard (DNS blocks spammy sites and google ads), HomeAssistant (using which I control my smart-devices like fan, lights, and a Wipro smart extension and integrated it with Alexa). <br>
+I use it primarily Degooglization: For selfhosting stuff like Immich(my mobile photo backup solution), Adguard (DNS blocks spammy sites and google ads), HomeAssistant (using which I control my smart-devices like fan, lights, and a Wipro smart extension and integrated it with Alexa), Synology NAS provides me a suite of software which replaces respective Google Cloud offerings. <br>
 The T630s have Proxmox installed, so I use them as my Linux playgrounds.
 Also, I store all of my data on my NAS. <br>
 
@@ -24,9 +23,13 @@ Currently it's in maintainance mode though.
 
 ### My background
 
-I graduated from Indian Institute of Technology, Kanpur (2016-2021) with my B.Tech. in Mechanical Engineering and a second major in Aerospace Engineering. Currently, I have 5 years of experience.
-<br>
-I am currently working at Nutanix as an MTS-3, having previous worked at companies like Gojek, Deloitte. My primary experience is in backend and infra, having worked on building microservices in Golang, Springboot, Ruby on Rails using Kafka, Postgres, Kubernetes, ELK stack.
+I graduated from Indian Institute of Technology, Kanpur (2016-2021) with my B.Tech. in Mechanical Engineering and a second major in Aerospace Engineering.
+
+I currently work at Nutanix as an MTS-3, having previous worked at companies like Gojek, Deloitte. My primary experience is in backend and infra with over 5+ years of experience, having worked on building microservices in Golang, Springboot, Ruby on Rails using Kafka, Postgres, Kubernetes, ELK stack, along with infrastructure experience working with Kubernetes, Helm charts, Envoy, OIDC flow in a control-plane migration.
+
+In my free time, I would be reading about a random system's internals (e.g., how Go's memory management works under the hood or Redis internals), watching GopherCon talks on Youtube, exploring database or distributed system internals and quite recently itching my curiousity about Deep Learning (LLMs, Diffusion models). Otherwise, updating my selfhosted services once in a while to be sure everything works.
+
+For more details, you can checkout <i><a href="/resume.pdf" target="_blank" rel="noopener noreferrer">my resume here</a></i>. If you have any good opportunities related to Backend, Infra, Data Engineering or AI (still learning) suitable for me, please feel free to reach out.
 
 ## What you'll find here
 
@@ -38,11 +41,17 @@ You can expect posts drawn from a mix of these themes:
 - System Design
 - AI
 
-I like to understand a topic from three angles: the intuitive picture, the underlying math, and my favourite: its history. I find it fascinating (and maybe a little important) how often conflict and necessity have accelerated research and development. A few examples that have always stuck with me:
+Also, I like to understand a topic from four angles:
+
+- the need or the problem statement at hand
+- the intuitive picture
+- the underlying math
+- my favourite: its history
+
+I find it fascinating (and maybe a little important) how often conflict and necessity have accelerated research and development. Human survival seems to motivate governments to fund research activities, without considering any positive outcomes. A few examples that have always stuck with me:
 
 - **Medicine & trauma care:** the mass production of penicillin was accelerated during World War II, fundamentally changing global healthcare; the EpiPen and other auto-injectors trace back to quickly treating soldiers for nerve-agent exposure.
-- **The internet:** ARPANET, a Cold War–era military communications network, laid the foundation for our modern digital infrastructure. Building on the initial vision of an "intergalactic computer network," DARPA researchers sought to create a communication system that could remain resilient even during Cold War tensions or potential military strikes. To connect various disparate networks together, DARPA launched the "Internetting project". In 1973, researchers ⁠Robert Kahn and Vinton Cerf developed the TCP/IP Protocol Suite under the DARPA program. These foundational protocols enabled seamless data transmission across multiple, different networks. On January 1, 1983, the ARPANET officially adopted TCP/IP, marking the birth of the modern Internet
-- **Aviator Sunglasses & Zippers:** Bausch & Lomb developed Aviator glasses in the 1930s specifically to protect U.S. military pilots from the blinding high-altitude glare.
+- **The internet:** DARPA built ARPANET in the Cold War for resilient military comms; Kahn and Cerf’s TCP/IP (1973) let disparate networks talk; ARPANET adopted it on Jan 1, 1983 — birth of the modern internet. high-altitude glare.
 - **Natural Language Processing (Siri & Alexa):** In the early 2000s, military commanders were overwhelmed by the massive influx of unstructured digital data, emails, and spoken communication during the wars in Iraq and Afghanistan. DARPA funded a massive project called CALO (Cognitive Assistant that Learns and Organizes) to build an AI assistant that could understand natural human language and organize data for military officers this lead to the formation of a company which was later acquired by Apple resulting in Siri.
 - **Everyday convenience:** freeze-dried food, bug spray (DEET), and the microwave oven all began as byproducts of military research.
 
