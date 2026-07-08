@@ -7,19 +7,25 @@ title: "About"
   <p style="margin: 0;">
   </br>
   Hi, I'm <b>Vasu Bansal</b>, a curious (software) engineer who enjoys learning about new things. </br> In this blog, I will start sharing a bit what I am learning, building, and what I am figuring out along the way.</p>
-  
   <img alt="Vasu Bansal" src="/dp.jpg" width="200em" style="border-radius: 8px;" />
 </div>
 
-Being a tech-geek, I also run a homelab (whenever I get time). The hardware consists of a Synology NAS 923+, a RaspberryPi 5 along with 2 HP T630s, which I got for cheap. Overall setup cost should be around 1 lakh INR.
-<img alt="My Homelab" src="/homelab.jpg" width="300em" style="border-radius: 8px;" />
-I use it primarily Degooglization: For selfhosting stuff like Immich(my mobile photo backup solution), Adguard (DNS blocks spammy sites and google ads), HomeAssistant (using which I control my smart-devices like fan, lights, and a Wipro smart extension and integrated it with Alexa), Synology NAS provides me a suite of software which replaces respective Google Cloud offerings. <br>
-The T630s have Proxmox installed, so I use them as my Linux playgrounds.
-Also, I store all of my data on my NAS. <br>
+<div style="display: flex; justify-content: space-between; gap: 1rem;">
+  <p style="margin: 0;">
+  </br>
+    Being a tech-geek, I also run a homelab (whenever I get time). The hardware consists of a Synology NAS 923+, a RaspberryPi 5 along with 2 HP T630s, which I got for cheap. Overall setup cost should be around 1 lakh INR.
+    </br></br>
+    I use it primarily for Degooglization: For selfhosting stuff like Immich(my mobile photo backup solution), Adguard (DNS blocks spammy sites and google ads), HomeAssistant (using which I control my smart-devices like fan, lights, and a Wipro smart extension and integrated it with Alexa), Synology NAS provides me a suite of software which replaces respective Google Cloud offerings. 
+    The T630s have Proxmox installed, so I use them as my Linux playgrounds.
+    Also, I store all of my data on my NAS. 
+    </br></br>
+    And everything is basically a Tailscale node. I use the free tier, so I can connect upto 100 devices in a mesh-based VPN. So, I can access my NAS on my iPad thus making sharing of data very easy and secure.
+    Currently it's in maintainance mode though.
+  </p>
 
-And everything is basically a Tailscale node. I use the free tier, so I can connect upto 100 devices in a mesh-based VPN. So, I can access my NAS on my iPad thus making sharing of data very easy and secure.
+  <img alt="My Homelab" src="/homelab.jpg" width="350em" style="border-radius: 8px;" />
 
-Currently it's in maintainance mode though.
+</div>
 
 ### My background
 
