@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>S2 Multilingual Tokenizer — Assignment Score</title>
+    <link rel="stylesheet" href="./theme-shell.css" />
+  </head>
+  <body>
+    <header class="page-header">
+      <h1>S2 Multilingual Tokenizer</h1>
+      <button type="button" class="theme-toggle" id="theme-toggle">
+        Toggle theme
+      </button>
+    </header>
+    <main>
+      <div
+        class="viz-s2-tokenizer-scorer"
+        data-viz="s2-tokenizer-scorer"
+        data-data-base="./public/data"
+      ></div>
+    </main>
+    <script>
+      (function () {
+        const root = document.documentElement;
+        const saved = localStorage.getItem("theme");
+        if (saved) root.setAttribute("data-theme", saved);
+        document
+          .getElementById("theme-toggle")
+          .addEventListener("click", () => {
+            const next =
+              root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+            root.setAttribute("data-theme", next);
+            localStorage.setItem("theme", next);
+          });
+      })();
+    </script>
+    <script src="./public/visualizations/s2-encode.js"></script>
+    <script src="./public/visualizations/s2-tokenizer-scorer.js"></script>
+  </body>
+</html>

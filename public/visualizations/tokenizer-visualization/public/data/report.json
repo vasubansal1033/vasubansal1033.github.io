@@ -1,0 +1,87 @@
+{
+  "generated_at": "2026-07-08T12:32:14.409500+00:00",
+  "tokenizer": "s2-merged",
+  "metric": "merged_vocab_tokens_per_pretoken_word",
+  "metric_note": "Excludes whitespace gaps between pretoken words.",
+  "vocab_size": 10000,
+  "vocab_entries": 10000,
+  "language_token_counts": {
+    "te": 2369,
+    "shared": 256,
+    "en": 3391,
+    "hi": 2495,
+    "pa": 1489
+  },
+  "eval_config": "/Users/vasubansal/projects/ai-learning/erav5/s2-tokenizer/config.yaml",
+  "languages": {
+    "en": {
+      "url": "https://en.wikipedia.org/wiki/India",
+      "page_title": "India",
+      "words": 9890,
+      "pretoken_words": 9890,
+      "tokens": 11867,
+      "fertility": 1.1999,
+      "fertility_calculation": "11867 / 9890 = 1.1999",
+      "fertility_threshold": 1.2,
+      "passes_threshold": true
+    },
+    "hi": {
+      "url": "https://hi.wikipedia.org/wiki/भारत",
+      "page_title": "भारत",
+      "words": 7797,
+      "pretoken_words": 7797,
+      "tokens": 14773,
+      "fertility": 1.8947,
+      "fertility_calculation": "14773 / 7797 = 1.8947",
+      "fertility_threshold": 1.6,
+      "passes_threshold": false
+    },
+    "pa": {
+      "url": "https://pa.wikipedia.org/wiki/ਭਾਰਤ",
+      "page_title": "ਭਾਰਤ",
+      "words": 4493,
+      "pretoken_words": 4493,
+      "tokens": 8550,
+      "fertility": 1.903,
+      "fertility_calculation": "8550 / 4493 = 1.9030",
+      "fertility_threshold": 1.6,
+      "passes_threshold": false
+    },
+    "te": {
+      "url": "https://te.wikipedia.org/wiki/భారతదేశం",
+      "page_title": "భారతదేశం",
+      "words": 2431,
+      "pretoken_words": 2431,
+      "tokens": 4848,
+      "fertility": 1.9942,
+      "fertility_calculation": "4848 / 2431 = 1.9942",
+      "fertility_threshold": 1.6,
+      "passes_threshold": false
+    }
+  },
+  "fertility_threshold": 1.6,
+  "fertility_thresholds": {
+    "en": 1.2,
+    "hi": 1.6,
+    "pa": 1.6,
+    "te": 1.6
+  },
+  "spread_formula": "X4 − X1 = 1.9942 − 1.1999 = 0.7943",
+  "sorted": [
+    ["te", 1.9942],
+    ["pa", 1.903],
+    ["hi", 1.8947],
+    ["en", 1.1999]
+  ],
+  "x_max": {
+    "lang": "te",
+    "value": 1.9942
+  },
+  "x_min": {
+    "lang": "en",
+    "value": 1.1999
+  },
+  "spread": 0.7943,
+  "score": 1258.9,
+  "score_formula": "1000 / (1.9942 - 1.1999) = 1258.9"
+}
