@@ -1,11 +1,6 @@
 (function () {
   const initialized = new WeakSet();
-  const LANG_LABELS = {
-    en: "English",
-    hi: "Hindi",
-    te: "Telugu",
-    pa: "Punjabi",
-  };
+  const LANG_LABELS = { en: "English", hi: "Hindi", te: "Telugu", pa: "Punjabi" };
   const PAGE_SIZES = [50, 100, 200, 500];
   const PLAYGROUND_SAMPLE = [
     "India is home to many languages and cultures.",
@@ -62,10 +57,7 @@
     if (stats.page_title) return stats.page_title;
     try {
       const path = new URL(stats.url).pathname;
-      return decodeURIComponent(path.replace(/^\/wiki\//, "")).replace(
-        /_/g,
-        " "
-      );
+      return decodeURIComponent(path.replace(/^\/wiki\//, "")).replace(/_/g, " ");
     } catch (_err) {
       return stats.url;
     }
@@ -93,6 +85,14 @@
 
   function actionButtonStyle(colors) {
     return `padding:0.35rem 0.7rem;border-radius:8px;border:1px solid ${colors.accent};background:transparent;color:${colors.accent};cursor:pointer;font-size:0.8rem;`;
+  }
+
+  function actionLinkStyle(colors) {
+    return `${actionButtonStyle(colors)}text-decoration:none;display:inline-flex;align-items:center;`;
+  }
+
+  function dataFileUrl(dataBase, filename) {
+    return `${String(dataBase).replace(/\/$/, "")}/${filename}`;
   }
 
   function downloadBlob(filename, content, mimeType) {
@@ -126,27 +126,31 @@
     const reportUrl = `${root}/report.json`;
     const vocabUrl = `${root}/vocab.json`;
     const runtimeUrl = `${root}/s2_runtime.json`;
-    const [reportRes, vocabRes] = await Promise.all([
+    const tokenizerUrl = `${root}/tokenizer.json`;
+    const [reportRes, vocabRes, tokenizerRes] = await Promise.all([
       fetch(reportUrl),
       fetch(vocabUrl),
+      fetch(tokenizerUrl),
     ]);
     if (!reportRes.ok || !vocabRes.ok) {
       throw new Error(
-        `Failed to load widget data from ${base}. Run uv run s2-widget first.`
+        `Failed to load widget data (${reportRes.status}/${vocabRes.status}). Run: uv run s2-widget`
       );
+    }
+    const report = await reportRes.json();
+    const vocab = await vocabRes.json();
+    let tokenizer = null;
+    if (tokenizerRes.ok) {
+      tokenizer = await tokenizerRes.json();
     }
     let s2Runtime = null;
     try {
       const runtimeRes = await fetch(runtimeUrl);
       if (runtimeRes.ok) s2Runtime = await runtimeRes.json();
-    } catch (_err) {
+    } catch (_error) {
       s2Runtime = null;
     }
-    return {
-      report: await reportRes.json(),
-      vocab: await vocabRes.json(),
-      s2Runtime,
-    };
+    return { report, vocab, s2Runtime, tokenizer, tokenizerUrl };
   }
 
   function formatScore(score) {
@@ -168,14 +172,11 @@
     if (!total || !Object.keys(counts).length) return "";
     const parts = Object.entries(counts)
       .sort((a, b) => b[1] - a[1])
-      .map(
-        ([lang, count]) =>
-          `${LANG_LABELS[lang] || lang} ${count.toLocaleString()}`
-      );
+      .map(([lang, count]) => `${LANG_LABELS[lang] || lang} ${count.toLocaleString()}`);
     return `${total.toLocaleString()} tokens — ${parts.join(" · ")}`;
   }
 
-  function renderEvaluationSection(report, colors) {
+  function renderEvaluationSection(report, colors, reportUrl, tokenizerUrl) {
     const sorted = report.sorted || [];
     const xMax = report.x_max || {};
     const xMin = report.x_min || {};
@@ -193,8 +194,7 @@
         const stats = (report.languages || {})[lang] || {};
         const label = LANG_LABELS[lang] || lang;
         const rankLabel = `X${sorted.length - index}`;
-        const threshold =
-          stats.fertility_threshold ?? thresholdForLang(report, lang);
+        const threshold = stats.fertility_threshold ?? thresholdForLang(report, lang);
         const pass = stats.passes_threshold;
         const statusColor = pass ? colors.pass : colors.fail;
         const statusText = pass ? "pass" : "fail";
@@ -220,7 +220,12 @@
             <div style="font-weight:600;font-size:0.95rem;margin-bottom:0.35rem;">Self score</div>
             <div style="font-size:2rem;font-weight:700;color:${colors.accent};line-height:1.1;">${formatScore(report.score)}</div>
           </div>
-          <button type="button" data-action="download-report-json" style="${actionButtonStyle(colors)}">Download report.json</button>
+          <div style="display:flex;flex-wrap:wrap;gap:0.45rem;">
+            <button type="button" data-action="download-tokenizer-json" style="${actionButtonStyle(colors)}">Download tokenizer.json</button>
+            <a href="${escapeAttr(tokenizerUrl)}" download="tokenizer.json" style="${actionLinkStyle(colors)}">Link: tokenizer.json</a>
+            <button type="button" data-action="download-report-json" style="${actionButtonStyle(colors)}">Download report.json</button>
+            <a href="${escapeAttr(reportUrl)}" download="s2-fertility-report.json" style="${actionLinkStyle(colors)}">Link: report.json</a>
+          </div>
         </div>
         <div style="font-size:0.82rem;opacity:0.85;font-family:ui-monospace,monospace;margin-bottom:0.2rem;">${report.score_formula || ""}</div>
         <div style="font-size:0.82rem;opacity:0.85;font-family:ui-monospace,monospace;margin-bottom:0.55rem;">${spreadFormula}</div>
@@ -318,9 +323,7 @@
   }
 
   function renderHighlightedTokens(text, spans, colors, container) {
-    const sorted = [...spans].sort(
-      (a, b) => a.start - b.start || a.end - b.end
-    );
+    const sorted = [...spans].sort((a, b) => a.start - b.start || a.end - b.end);
     container.replaceChildren();
 
     let cursor = 0;
@@ -328,9 +331,7 @@
       const span = sorted[index];
       if (span.end <= cursor || span.start >= text.length) continue;
       if (span.start > cursor) {
-        container.appendChild(
-          document.createTextNode(text.slice(cursor, span.start))
-        );
+        container.appendChild(document.createTextNode(text.slice(cursor, span.start)));
       }
       const effectiveStart = Math.max(span.start, cursor);
       const effectiveEnd = Math.min(span.end, text.length);
@@ -375,7 +376,10 @@
       <div style="${cardStyle(colors)}margin-bottom:1rem;" data-section="tokenizer-playground">
         <div style="font-weight:600;font-size:0.95rem;margin-bottom:0.35rem;">Tokenization playground</div>
         <div style="font-size:0.82rem;opacity:0.85;margin-bottom:0.65rem;">
-          All languages share one 10k merged vocab.
+          All languages share one 10k merged vocab. Runtime does <strong>not</strong> call
+          per-language BPE or SPM — it segments with DP (English), greedy (hi/pa), or
+          Viterbi→merged map (Telugu). BPE only trains which pieces enter the vocab.
+          Sample text below includes all four languages.
         </div>
         <div data-out="playground-stats" style="font-size:0.8rem;opacity:0.85;margin:0 0 0.55rem;font-family:ui-monospace,monospace;"></div>
         <div class="playground-panels">
@@ -398,7 +402,8 @@
     vocabLangs,
     selectedLang,
     selectedSort,
-    vocabComposition
+    vocabComposition,
+    vocabUrl
   ) {
     const pageSizeOptions = PAGE_SIZES.map(
       size =>
@@ -432,10 +437,13 @@
           <div style="display:flex;flex-wrap:wrap;gap:0.45rem;">
             <button type="button" data-action="download-vocab-json" style="${actionButtonStyle(colors)}">Download JSON</button>
             <button type="button" data-action="download-vocab-csv" style="${actionButtonStyle(colors)}">Download CSV</button>
+            <a href="${escapeAttr(vocabUrl)}" download="s2-merged-vocab.json" style="${actionLinkStyle(colors)}">Link: vocab.json</a>
           </div>
         </div>
         <div style="font-size:0.8rem;opacity:0.85;margin-bottom:0.65rem;">
-          ${vocabComposition ? `${escapeHtml(vocabComposition)}. ` : ""}Browse or download the full token list below.
+          ${vocabComposition ? `${escapeHtml(vocabComposition)}. ` : ""}Browse below, use Download for an in-memory copy, or open
+          <a href="${escapeAttr(vocabUrl)}" download="s2-merged-vocab.json" style="color:${colors.accent};">${escapeHtml(vocabUrl)}</a>
+          to fetch the tokenizer vocab file directly.
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:0.6rem;margin-bottom:0.65rem;align-items:center;">
           <input type="search" data-input="token-search" placeholder="Search tokens..." style="flex:1;min-width:180px;padding:0.45rem 0.6rem;border-radius:8px;border:1px solid ${colors.border};background:transparent;color:inherit;" />
@@ -479,12 +487,15 @@
   }
 
   function createWidget(container) {
-    const dataBase =
-      container.getAttribute("data-data-base") || "./public/data";
+    const dataBase = container.getAttribute("data-data-base") || "./public/data";
+    const vocabUrl = dataFileUrl(dataBase, "vocab.json");
+    const reportUrl = dataFileUrl(dataBase, "report.json");
+    const tokenizerUrl = dataFileUrl(dataBase, "tokenizer.json");
     const state = {
       report: null,
       vocab: [],
       s2Runtime: null,
+      tokenizer: null,
       playgroundText: PLAYGROUND_SAMPLE,
       playgroundTimer: null,
       filter: "",
@@ -492,6 +503,9 @@
       vocabSort: "id-asc",
       page: 1,
       pageSize: 100,
+      vocabUrl,
+      reportUrl,
+      tokenizerUrl,
     };
 
     container.innerHTML = `
@@ -504,9 +518,7 @@
     const el = sel => container.querySelector(sel);
 
     function vocabLangs() {
-      return [
-        ...new Set(state.vocab.map(item => item.lang).filter(Boolean)),
-      ].sort();
+      return [...new Set(state.vocab.map(item => item.lang).filter(Boolean))].sort();
     }
 
     function sortedFilteredVocab() {
@@ -604,18 +616,14 @@
     function updatePlaygroundChips() {
       const statsOut = el('[data-out="playground-stats"]');
       const outputOut = el('[data-out="playground-output"]');
-      if (!statsOut || !outputOut || !state.s2Runtime || !window.S2Encode)
-        return;
+      if (!statsOut || !outputOut || !state.s2Runtime || !window.S2Encode) return;
 
       ensureHighlightStyles();
       const colors = getColors();
       const text = state.playgroundText;
       const spans = window.S2Encode.displaySpans(text, state.s2Runtime);
       const tokenIds = window.S2Encode.encodeIds(text, state.s2Runtime);
-      const fertilityTokens = window.S2Encode.countFertilityTokens(
-        text,
-        state.s2Runtime
-      );
+      const fertilityTokens = window.S2Encode.countFertilityTokens(text, state.s2Runtime);
       const chars = [...text].length;
       const pretokenWords = window.S2Encode.countPretokenWords(
         text,
@@ -636,15 +644,19 @@
       const content = el('[data-out="content"]');
       content.style.display = "block";
       content.innerHTML =
-        renderEvaluationSection(state.report, colors) +
-        renderTokenizerPlaygroundShell(colors, Boolean(state.s2Runtime)) +
+        renderEvaluationSection(state.report, colors, state.reportUrl, state.tokenizerUrl) +
+        renderTokenizerPlaygroundShell(
+          colors,
+          Boolean(state.s2Runtime)
+        ) +
         renderTokenExplorerShell(
           state.vocab.length,
           colors,
           vocabLangs(),
           state.vocabLangFilter,
           state.vocabSort,
-          vocabCompositionLabel(state.report)
+          vocabCompositionLabel(state.report),
+          state.vocabUrl
         );
 
       const pageSizeSelect = el('[data-input="page-size"]');
@@ -716,6 +728,15 @@
       if (action === "page-next") state.page = Math.min(pages, state.page + 1);
       if (action === "page-last") state.page = pages;
 
+      if (action === "download-tokenizer-json" && state.tokenizer) {
+        downloadBlob(
+          "tokenizer.json",
+          JSON.stringify(state.tokenizer, null, 2),
+          "application/json"
+        );
+        return;
+      }
+
       if (action === "download-vocab-json") {
         downloadBlob(
           "s2-merged-vocab.json",
@@ -726,11 +747,7 @@
       }
 
       if (action === "download-vocab-csv") {
-        downloadBlob(
-          "s2-merged-vocab.csv",
-          vocabToCsv(state.vocab),
-          "text/csv;charset=utf-8"
-        );
+        downloadBlob("s2-merged-vocab.csv", vocabToCsv(state.vocab), "text/csv;charset=utf-8");
         return;
       }
 
@@ -747,10 +764,12 @@
     });
 
     loadData(dataBase)
-      .then(({ report, vocab, s2Runtime }) => {
+      .then(({ report, vocab, s2Runtime, tokenizer, tokenizerUrl }) => {
         state.report = report;
         state.vocab = vocab;
         state.s2Runtime = s2Runtime;
+        state.tokenizer = tokenizer;
+        if (tokenizerUrl) state.tokenizerUrl = tokenizerUrl;
         el('[data-out="status"]').style.display = "none";
         renderAll();
       })
@@ -779,9 +798,7 @@
 
   function initAll() {
     document
-      .querySelectorAll(
-        '.viz-s2-tokenizer-scorer[data-viz="s2-tokenizer-scorer"]'
-      )
+      .querySelectorAll('.viz-s2-tokenizer-scorer[data-viz="s2-tokenizer-scorer"]')
       .forEach(mount);
   }
 

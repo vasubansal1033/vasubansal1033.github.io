@@ -1,27 +1,27 @@
 {
-  "generated_at": "2026-07-08T12:32:14.409500+00:00",
+  "generated_at": "2026-07-15T16:44:19.075447+00:00",
   "tokenizer": "s2-merged",
   "metric": "merged_vocab_tokens_per_pretoken_word",
   "metric_note": "Excludes whitespace gaps between pretoken words.",
   "vocab_size": 10000,
   "vocab_entries": 10000,
   "language_token_counts": {
-    "te": 2369,
+    "te": 2384,
     "shared": 256,
-    "en": 3391,
-    "hi": 2495,
-    "pa": 1489
+    "en": 3171,
+    "hi": 2607,
+    "pa": 1582
   },
   "eval_config": "/Users/vasubansal/projects/ai-learning/erav5/s2-tokenizer/config.yaml",
   "languages": {
     "en": {
       "url": "https://en.wikipedia.org/wiki/India",
       "page_title": "India",
-      "words": 9890,
-      "pretoken_words": 9890,
-      "tokens": 11867,
-      "fertility": 1.1999,
-      "fertility_calculation": "11867 / 9890 = 1.1999",
+      "words": 9886,
+      "pretoken_words": 9886,
+      "tokens": 11857,
+      "fertility": 1.1994,
+      "fertility_calculation": "11857 / 9886 = 1.1994",
       "fertility_threshold": 1.2,
       "passes_threshold": true
     },
@@ -30,31 +30,31 @@
       "page_title": "भारत",
       "words": 7797,
       "pretoken_words": 7797,
-      "tokens": 14773,
-      "fertility": 1.8947,
-      "fertility_calculation": "14773 / 7797 = 1.8947",
+      "tokens": 10134,
+      "fertility": 1.2997,
+      "fertility_calculation": "10134 / 7797 = 1.2997",
       "fertility_threshold": 1.6,
-      "passes_threshold": false
+      "passes_threshold": true
     },
     "pa": {
       "url": "https://pa.wikipedia.org/wiki/ਭਾਰਤ",
       "page_title": "ਭਾਰਤ",
       "words": 4493,
       "pretoken_words": 4493,
-      "tokens": 8550,
-      "fertility": 1.903,
-      "fertility_calculation": "8550 / 4493 = 1.9030",
+      "tokens": 5615,
+      "fertility": 1.2497,
+      "fertility_calculation": "5615 / 4493 = 1.2497",
       "fertility_threshold": 1.6,
-      "passes_threshold": false
+      "passes_threshold": true
     },
     "te": {
       "url": "https://te.wikipedia.org/wiki/భారతదేశం",
       "page_title": "భారతదేశం",
       "words": 2431,
       "pretoken_words": 2431,
-      "tokens": 4848,
-      "fertility": 1.9942,
-      "fertility_calculation": "4848 / 2431 = 1.9942",
+      "tokens": 4847,
+      "fertility": 1.9938,
+      "fertility_calculation": "4847 / 2431 = 1.9938",
       "fertility_threshold": 1.6,
       "passes_threshold": false
     }
@@ -66,22 +66,34 @@
     "pa": 1.6,
     "te": 1.6
   },
-  "spread_formula": "X4 − X1 = 1.9942 − 1.1999 = 0.7943",
+  "spread_formula": "X4 − X1 = 1.9938 − 1.1994 = 0.7945",
   "sorted": [
-    ["te", 1.9942],
-    ["pa", 1.903],
-    ["hi", 1.8947],
-    ["en", 1.1999]
+    [
+      "te",
+      1.9938
+    ],
+    [
+      "hi",
+      1.2997
+    ],
+    [
+      "pa",
+      1.2497
+    ],
+    [
+      "en",
+      1.1994
+    ]
   ],
   "x_max": {
     "lang": "te",
-    "value": 1.9942
+    "value": 1.9938
   },
   "x_min": {
     "lang": "en",
-    "value": 1.1999
+    "value": 1.1994
   },
-  "spread": 0.7943,
-  "score": 1258.9,
-  "score_formula": "1000 / (1.9942 - 1.1999) = 1258.9"
+  "spread": 0.7945,
+  "score": 1258.72,
+  "score_formula": "1000 / (1.9938 - 1.1994) = 1258.72"
 }
