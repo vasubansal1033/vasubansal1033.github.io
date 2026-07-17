@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-15T16:44:19.075447+00:00",
+  "generated_at": "2026-07-17T16:19:41.404023+00:00",
   "tokenizer": "s2-merged",
   "metric": "merged_vocab_tokens_per_pretoken_word",
   "metric_note": "Excludes whitespace gaps between pretoken words.",

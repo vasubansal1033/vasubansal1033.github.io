@@ -127,10 +127,9 @@
     const vocabUrl = `${root}/vocab.json`;
     const runtimeUrl = `${root}/s2_runtime.json`;
     const tokenizerUrl = `${root}/tokenizer.json`;
-    const [reportRes, vocabRes, tokenizerRes] = await Promise.all([
+    const [reportRes, vocabRes] = await Promise.all([
       fetch(reportUrl),
       fetch(vocabUrl),
-      fetch(tokenizerUrl),
     ]);
     if (!reportRes.ok || !vocabRes.ok) {
       throw new Error(
@@ -139,10 +138,6 @@
     }
     const report = await reportRes.json();
     const vocab = await vocabRes.json();
-    let tokenizer = null;
-    if (tokenizerRes.ok) {
-      tokenizer = await tokenizerRes.json();
-    }
     let s2Runtime = null;
     try {
       const runtimeRes = await fetch(runtimeUrl);
@@ -150,7 +145,7 @@
     } catch (_error) {
       s2Runtime = null;
     }
-    return { report, vocab, s2Runtime, tokenizer, tokenizerUrl };
+    return { report, vocab, s2Runtime, tokenizerUrl };
   }
 
   function formatScore(score) {
@@ -221,7 +216,7 @@
             <div style="font-size:2rem;font-weight:700;color:${colors.accent};line-height:1.1;">${formatScore(report.score)}</div>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:0.45rem;">
-            <button type="button" data-action="download-tokenizer-json" style="${actionButtonStyle(colors)}">Download tokenizer.json</button>
+            <button type="button" data-action="download-tokenizer-json" style="${actionButtonStyle(colors)}">Download tokenizer.json (grader)</button>
             <a href="${escapeAttr(tokenizerUrl)}" download="tokenizer.json" style="${actionLinkStyle(colors)}">Link: tokenizer.json</a>
             <button type="button" data-action="download-report-json" style="${actionButtonStyle(colors)}">Download report.json</button>
             <a href="${escapeAttr(reportUrl)}" download="s2-fertility-report.json" style="${actionLinkStyle(colors)}">Link: report.json</a>
@@ -376,10 +371,7 @@
       <div style="${cardStyle(colors)}margin-bottom:1rem;" data-section="tokenizer-playground">
         <div style="font-weight:600;font-size:0.95rem;margin-bottom:0.35rem;">Tokenization playground</div>
         <div style="font-size:0.82rem;opacity:0.85;margin-bottom:0.65rem;">
-          All languages share one 10k merged vocab. Runtime does <strong>not</strong> call
-          per-language BPE or SPM — it segments with DP (English), greedy (hi/pa), or
-          Viterbi→merged map (Telugu). BPE only trains which pieces enter the vocab.
-          Sample text below includes all four languages.
+          All languages share one 10k merged vocab.
         </div>
         <div data-out="playground-stats" style="font-size:0.8rem;opacity:0.85;margin:0 0 0.55rem;font-family:ui-monospace,monospace;"></div>
         <div class="playground-panels">
@@ -495,7 +487,6 @@
       report: null,
       vocab: [],
       s2Runtime: null,
-      tokenizer: null,
       playgroundText: PLAYGROUND_SAMPLE,
       playgroundTimer: null,
       filter: "",
@@ -728,12 +719,13 @@
       if (action === "page-next") state.page = Math.min(pages, state.page + 1);
       if (action === "page-last") state.page = pages;
 
-      if (action === "download-tokenizer-json" && state.tokenizer) {
-        downloadBlob(
-          "tokenizer.json",
-          JSON.stringify(state.tokenizer, null, 2),
-          "application/json"
-        );
+      if (action === "download-tokenizer-json" && state.tokenizerUrl) {
+        const anchor = document.createElement("a");
+        anchor.href = state.tokenizerUrl;
+        anchor.download = "tokenizer.json";
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
         return;
       }
 
@@ -764,11 +756,10 @@
     });
 
     loadData(dataBase)
-      .then(({ report, vocab, s2Runtime, tokenizer, tokenizerUrl }) => {
+      .then(({ report, vocab, s2Runtime, tokenizerUrl }) => {
         state.report = report;
         state.vocab = vocab;
         state.s2Runtime = s2Runtime;
-        state.tokenizer = tokenizer;
         if (tokenizerUrl) state.tokenizerUrl = tokenizerUrl;
         el('[data-out="status"]').style.display = "none";
         renderAll();
